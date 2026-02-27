@@ -303,14 +303,15 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <div class="af" id="outHish">—</div>
           </div>
           <div class="fld">
-            <label>השקעה עצמית חודשית <span class="ba">אוטומטי</span></label>
+            <label>השלמה — שוק ההון (ETF / מניות) <span class="ba">אוטומטי</span></label>
             <div class="af" id="outEq">—</div>
-            <div class="note">כמה צריך לחסוך בשוק ההון כדי להגיע ליעד — מחושב לאחור</div>
+            <div class="note">מחושב לאחור: כמה צריך להשקיע <strong>מעבר</strong> לגמל ולקרן ההשתלמות כדי להגיע ליעד הפרישה</div>
           </div>
         </div>
         <div class="fld">
           <label>סה״כ חיסכון חודשי נדרש <span class="ba">אוטומטי</span></label>
           <div class="af" style="font-size:16px" id="outTotSav">—</div>
+          <div class="note" id="outTotSavNote" style="margin-top:6px"></div>
         </div>
 
         <div class="st"><div class="sd" style="background:var(--purple)"></div>נכסים קיימים כיום</div>
@@ -517,6 +518,7 @@ function calc(){
   $('outHish').textContent     = fmtN(mHish)+'/חודש';
   $('outEq').textContent       = fmtN(mEq)+'/חודש';
   $('outTotSav').textContent   = fmtN(mTot)+'/חודש';
+  $('outTotSavNote').innerHTML = 'גמל <strong>'+Math.round(mGem).toLocaleString('he-IL')+'</strong> + קרה"ש <strong>'+Math.round(mHish).toLocaleString('he-IL')+'</strong> + שוק ההון <strong>'+Math.round(mEq).toLocaleString('he-IL')+'</strong> ₪';
   $('outInitTot').textContent  = fmtN(iH+iE+iP);
   $('outMort').textContent     = mortMo>0 ? '-'+fmtN(mortMo)+'/חודש' : '0 \u20aa';
 

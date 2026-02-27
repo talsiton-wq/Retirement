@@ -166,14 +166,14 @@ tbody tr.cur td:first-child{color:var(--blue);font-weight:700}
 
         <div class="st">הכנסה ויעד</div>
         <div class="fld">
-          <label>ברוטו להפרשות (שכר סוציאלי) <span class="bi">למלא</span></label>
+          <label>ברוטו למס (שכר סוציאלי) <span class="bi">למלא</span></label>
           <div class="iw"><input type="number" id="avgSal" value="45000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           <div style="font-size:11px;color:var(--txt3);margin-top:4px">גמל, פנסיה וקרן השתלמות מחושבים על שכר זה בלבד</div>
         </div>
         <div class="fld">
-          <label>תוספות (נסיעות, שעות נוספות וכד׳) <span class="bi">למלא</span></label>
+          <label>תוספת (נסיעות, שעות נוספות, בונוס) <span class="bi">למלא</span></label>
           <div class="iw"><input type="number" id="extras" value="0" oninput="calc()"><span class="iu">₪/חודש</span></div>
-          <div style="font-size:11px;color:var(--txt3);margin-top:4px">נסיעות, שעות נוספות, בונוס חד-פעמי וכד׳ — מוסף לנטו בלבד</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:4px">מוסף לנטו בלבד — אין הפרשות סוציאליות על תוספת זו</div>
         </div>
         <div class="fld">
           <label>סה״כ שכר ברוטו חודשי <span class="ba">אוטומטי</span></label>
@@ -198,10 +198,10 @@ tbody tr.cur td:first-child{color:var(--blue);font-weight:700}
             <label>קרן השתלמות <span class="ba">אוטומטי</span></label>
             <div style="display:flex;gap:6px;margin-bottom:7px">
               <button id="hBtn1" onclick="setHish(1)" style="flex:1;padding:6px 4px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;border-radius:7px;border:1.5px solid var(--blue);background:var(--blt);color:var(--blue);cursor:pointer">עד תקרה<br><span style="font-size:10px;font-weight:400">1,571 ₪/חודש</span></button>
-              <button id="hBtn2" onclick="setHish(2)" style="flex:1;padding:6px 4px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;border-radius:7px;border:1.5px solid var(--bdr);background:#f8fafc;color:var(--txt2);cursor:pointer">% מהשכר<br><span style="font-size:10px;font-weight:400">10% מהבסיס</span></button>
+              <button id="hBtn2" onclick="setHish(2)" style="flex:1;padding:6px 4px;font-size:11px;font-weight:700;font-family:'Heebo',sans-serif;border-radius:7px;border:1.5px solid var(--bdr);background:#f8fafc;color:var(--txt2);cursor:pointer">% מברוטו למס<br><span style="font-size:10px;font-weight:400">10% מהבסיס</span></button>
             </div>
             <div id="hishPctWrap" style="display:none;margin-bottom:7px">
-              <label style="font-size:11px;color:var(--txt2);margin-bottom:4px;display:block">% מהשכר שמהווה את הבסיס לחישוב</label>
+              <label style="font-size:11px;color:var(--txt2);margin-bottom:4px;display:block">% מברוטו למס — הקרן תחושב כ-10% מסכום זה</label>
               <div class="iw"><input type="number" id="hishPct" value="90" min="1" max="100" oninput="calc()"><span class="iu">%</span></div>
               <div style="font-size:11px;color:var(--txt3);margin-top:4px" id="hishCalcNote">—</div>
             </div>
@@ -357,6 +357,7 @@ function pmtDraw(pv,r,n){ return r===0 ? pv/n : pv*r/(1-Math.pow(1+r,-n)); }
 function calc(){
   var age    = num('age');
   var yWork  = num('ywork');
+  var n      = yWork;
   var penAge = num('penAge');
   var avgSal = num('avgSal');
   var desired= num('desired');
@@ -403,7 +404,7 @@ function calc(){
   var netAfterSavings = netSal - mTot;
 
   // Mortgage
-  var mortYrs = gapY>0 ? gapY : 25;
+  var mortYrs = yWork; // תקופת המשכנתא = שנות עבודה שנותרו (כמו באקסל)
   var mortMo  = (mortB>0 && mortR>0) ? pmtLoan(mortB, mortRM, mortYrs*12) : 0;
 
   // Update auto display fields
@@ -477,8 +478,8 @@ function calc(){
   var netNeeded = desired - mortMo;
   $('salBody').innerHTML = '<div class="sb">'
     +'<div class="sbt">כדי להגיע ל-'+fmtN(desired)+' ברוטו בפרישה, כיום אתה צריך:</div>'
-    +'<div class="sr"><span class="sl2">שכר בסיס נטו (55% מ-'+fmtN(avgSal)+')</span><span class="sv2">'+fmtN(avgSal*0.55)+'</span></div>'
-    +'<div class="sr"><span class="sl2">תוספות (נסיעות וכד’)</span><span class="sv2" style="color:var(--green)">'+fmtN(extras)+'</span></div>'
+    +’<div class="sr"><span class="sl2">ברוטו למס נטו (55% מ-’+fmtN(avgSal)+’)</span><span class="sv2">’+fmtN(avgSal*0.55)+’</span></div>’
+    +’<div class="sr"><span class="sl2">תוספת (נסיעות וכד\u2019 — ללא הפרשות)</span><span class="sv2" style="color:var(--green)">’+fmtN(extras)+’</span></div>’
     +'<div class="sr"><span class="sl2">קה"ש + גמל/פנסיה (הפרשות)</span><span class="sv2">'+fmtN(salContr)+'</span></div>'
     +'<div class="sr"><span class="sl2">מניות / בונוסים נוספים</span><span class="sv2" style="color:var(--purple)">'+fmtN(bonusNeed)+'</span></div>'
     +'<div class="sr"><span class="sl2">פחות תשלום משכנתא</span><span class="sv2" style="color:var(--red)">-'+fmtN(mortMo)+'</span></div>'

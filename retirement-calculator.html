@@ -533,14 +533,18 @@ function calc(){
 
   var safeMo   = tot*wd/12;
   var drawMo   = gapY>0 ? pmtDraw(tot, rM, gapY*12) : safeMo;
-  var totP     = fvP(tot, r, gapY);
+  // totP = balance at pension age: portfolio grows monthly at rM, but safeMo is withdrawn each month during gap.
+  // Contributions have already stopped at retirement (fvA above ran for n=yWork months only).
+  var totP = gapY>0
+    ? Math.max(0, fvP(tot, rM, gapY*12) - fvA(safeMo, rM, gapY*12))
+    : tot;
   var penBruto = totP/(202+4*(67-penAge));
 
   // KPIs
-  $('k1').textContent = fmtM(tot);    $('k1s').textContent = 'גיל פרישה '+retAge;
+  $('k1').textContent = fmtM(tot);    $('k1s').textContent = 'גיל פרישה '+retAge+' · הפרשות נפסקות כאן';
   $('k2').textContent = fmtK(safeMo); $('k2s').textContent = 'שיעור '+(wd*100).toFixed(1)+'% לנצח';
-  $('k3').textContent = fmtK(drawMo); $('k3s').textContent = 'על פני '+gapY+' שנים עד גיל '+penAge;
-  $('k4').textContent = fmtM(totP);   $('k4s').textContent = 'פנסיה מוערכת: '+Math.round(penBruto/100)*100+' \u20aa/חודש';
+  $('k3').textContent = fmtK(drawMo); $('k3s').textContent = 'על פני '+gapY+' שנים עד גיל '+penAge+' (מושך קרן)';
+  $('k4').textContent = fmtM(totP);   $('k4s').textContent = (gapY>0?'לאחר '+gapY+' שנות משיכת SWR · ':'')+'פנסיה מוערכת: '+Math.round(penBruto/100)*100+' \u20aa/חודש';
 
   // Goal meter
   var ratio = drawMo / Math.max(1, desired);

@@ -399,12 +399,12 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
     </div>
 
     <div class="card">
-      <div class="ch"><div class="ci ci-a">🗂️</div><div><h2>פירוט נכסים בגיל הפרישה</h2><p>מה יצטבר בכל קופה</p></div></div>
+      <div class="ch"><div class="ci ci-a">🗂️</div><div><h2>פירוט נכסים בגיל הפרישה</h2><p>חיסכון חודשי כיום → סכום שיצטבר בפרישה</p></div></div>
       <div class="cb" id="bkBody">—</div>
     </div>
 
     <div class="card">
-      <div class="ch"><div class="ci ci-g">💰</div><div><h2>כמה נטו צריך עכשיו?</h2><p>פירוט השכר הנדרש כדי לעמוד ביעד הפרישה</p></div></div>
+      <div class="ch"><div class="ci ci-g">💰</div><div><h2>תזרים חודשי — מה נשאר לך ביד?</h2><p>הכנסה נטו פחות משכנתא והשקעה עצמאית</p></div></div>
       <div class="cb" id="salBody">—</div>
     </div>
 
@@ -567,12 +567,20 @@ function calc(){
     {nm:'קרן השתלמות', mo:mHish,tot:hR, col:'#d97706'},
     {nm:'הון עצמי',    mo:mEq,  tot:eR, col:'#7c3aed'},
   ];
-  var bkHtml = items.map(function(it){
+  // Header row for breakdown
+  var bkHtml = '<div style="display:flex;align-items:center;gap:10px;padding:0 0 8px;border-bottom:2px solid var(--bdr);margin-bottom:2px">'
+    +'<div style="width:10px;flex-shrink:0"></div>'
+    +'<div style="flex:1;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt3)">קופה</div>'
+    +'<div style="min-width:100px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt3)">חיסכון חודשי</div>'
+    +'<div style="flex:2;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt3);text-align:center">חלק מהסה"כ</div>'
+    +'<div style="min-width:90px;text-align:left;font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--txt3)">צבירה בפרישה</div>'
+    +'</div>';
+  bkHtml += items.map(function(it){
     var p = tot>0 ? Math.round(it.tot/tot*100) : 0;
     return '<div class="bki">'
       +'<div class="bkd" style="background:'+it.col+'"></div>'
       +'<div class="bkn">'+it.nm+'</div>'
-      +'<div class="bkm">'+Math.round(it.mo).toLocaleString('he-IL')+' \u20aa/חודש</div>'
+      +'<div class="bkm" style="color:var(--txt2)">'+Math.round(it.mo).toLocaleString('he-IL')+' \u20aa</div>'
       +'<div class="bkb"><div class="bkf" style="width:'+p+'%;background:'+it.col+'55;outline:1px solid '+it.col+'44"></div></div>'
       +'<div class="bkt" style="color:'+it.col+'">'+fmtM(it.tot)+'</div>'
       +'</div>';
@@ -580,27 +588,49 @@ function calc(){
   bkHtml += '<div class="bki" style="border-top:2px solid var(--bdr);margin-top:5px;padding-top:12px">'
     +'<div class="bkd" style="background:var(--txt)"></div>'
     +'<div class="bkn" style="font-weight:700">סה"כ</div>'
-    +'<div class="bkm" style="font-weight:700">'+Math.round(mTot).toLocaleString('he-IL')+' \u20aa/חודש</div>'
+    +'<div class="bkm" style="font-weight:700;color:var(--txt)">'+Math.round(mTot).toLocaleString('he-IL')+' \u20aa</div>'
     +'<div class="bkb"></div>'
     +'<div class="bkt" style="font-size:16px;color:var(--indigo)">'+fmtM(tot)+'</div>'
     +'</div>';
   $('bkBody').innerHTML = bkHtml;
 
-  // Salary decode
-  var salBase  = avgSal*0.55 + extras;
-  var salContr = (0.20833*avgSal) + mHish;
-  var bonusNeed= Math.max(0, desired - mortMo - salBase - salContr);
-  var netNeeded= desired - mortMo;
-  $('salBody').innerHTML = '<div class="sb">'
-    +'<div class="sbt">כדי להגיע ל-'+fmtN(desired)+' ברוטו בפרישה, כיום אתה צריך:</div>'
-    +'<div class="sr"><span class="sl2">ברוטו למס נטו (55% מ-'+fmtN(avgSal)+')</span><span class="sv2">'+fmtN(avgSal*0.55)+'</span></div>'
-    +'<div class="sr"><span class="sl2">תוספת (נסיעות וכד\u2019 — ללא הפרשות)</span><span class="sv2" style="color:var(--green)">'+fmtN(extras)+'</span></div>'
-    +'<div class="sr"><span class="sl2">קה"ש + גמל/פנסיה (הפרשות)</span><span class="sv2">'+fmtN(salContr)+'</span></div>'
-    +'<div class="sr"><span class="sl2">מניות / בונוסים נוספים</span><span class="sv2" style="color:var(--purple)">'+fmtN(bonusNeed)+'</span></div>'
-    +'<div class="sr"><span class="sl2">פחות תשלום משכנתא</span><span class="sv2" style="color:var(--red)">-'+fmtN(mortMo)+'</span></div>'
-    +'<div class="sr"><span class="sl2">סה"כ נטו חודשי נדרש</span><span class="sv2" style="font-size:16px;color:var(--indigo)">'+fmtN(netNeeded)+'</span></div>'
+  // Cash flow breakdown
+  var netInHand  = avgSal*0.55 + extras;
+  var afterFixed = netInHand - mortMo - mEq;
+  var cashColor  = afterFixed >= 0 ? 'var(--green)' : 'var(--red)';
+  var cashBg     = afterFixed >= 0 ? 'var(--glt)'   : 'var(--rlt)';
+  var cashBorder = afterFixed >= 0 ? 'var(--gbd)'   : 'var(--rbd)';
+  var secHdr = 'font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--txt3);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--bdr)';
+  $('salBody').innerHTML =
+    // ── 1. Income ──
+    '<div style="margin-bottom:14px">'
+    +'<div style="'+secHdr+'">↓ נכנס לחשבון (נטו)</div>'
+    +'<div class="sr"><span class="sl2">ברוטו למס נטו (~55% \u00d7 '+fmtN(avgSal)+')</span><span class="sv2">'+fmtN(avgSal*0.55)+'</span></div>'
+    +(extras>0?'<div class="sr"><span class="sl2">+ תוספת (ללא הפרשות)</span><span class="sv2" style="color:var(--green)">+'+fmtN(extras)+'</span></div>':'')
+    +'<div class="sr" style="padding-top:8px;margin-top:4px;border-top:2px solid var(--bdr);border-bottom:none"><span class="sl2" style="font-weight:700">= נטו ביד</span><span class="sv2" style="font-size:15px">'+fmtN(netInHand)+'</span></div>'
     +'</div>'
-    +'<p style="font-size:11px;color:var(--txt3);margin-top:9px">בונוס ברוטו דולרי שנתי: $'+Math.round(bonusNeed*12*2/3.7).toLocaleString()+'</p>';
+    // ── 2. Outgoing ──
+    +'<div style="margin-bottom:14px">'
+    +'<div style="'+secHdr+'">↑ יוצא מהנטו</div>'
+    +'<div class="sr"><span class="sl2">− משכנתא חודשית</span><span class="sv2" style="color:var(--red)">−'+fmtN(mortMo)+'</span></div>'
+    +'<div class="sr"><span class="sl2">− השקעה עצמאית (ETF / שוק ההון)</span><span class="sv2" style="color:var(--purple)">−'+fmtN(mEq)+'</span></div>'
+    +'</div>'
+    // ── 3. What's left ──
+    +'<div style="background:'+cashBg+';border:1.5px solid '+cashBorder+';border-radius:12px;padding:14px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:5px">נשאר לחיות ממנו כל חודש</div>'
+    +'<div style="font-size:22px;font-weight:900;color:'+cashColor+'">'+(afterFixed<0?'−':'')+fmtN(Math.abs(afterFixed))+'</div>'
+    +(afterFixed<0
+      ?'<div style="font-size:11px;color:var(--red);margin-top:4px">\u26a0\ufe0f גירעון — ההכנסה הנוכחית אינה מספיקה לכסות משכנתא + השקעה עצמאית</div>'
+      :'<div style="font-size:11px;color:var(--txt3);margin-top:3px">אחרי מסים, משכנתא והשקעה עצמאית</div>')
+    +'</div>'
+    // ── 4. Employer savings (not in hand) ──
+    +'<div style="background:var(--ilt);border:1px solid var(--ibd);border-radius:10px;padding:12px">'
+    +'<div style="'+secHdr.replace('var(--txt3)','var(--indigo)').replace('var(--bdr)','var(--ibd)')+'">📦 הפרשות לפרישה (לא ביד — ישירות לחיסכון)</div>'
+    +'<div class="sr"><span class="sl2">גמל / פנסיה (20.83%)</span><span class="sv2">'+fmtN(mGem)+'/חודש</span></div>'
+    +'<div class="sr"><span class="sl2">קרן השתלמות</span><span class="sv2">'+fmtN(mHish)+'/חודש</span></div>'
+    +'<div class="sr" style="border-top:1px solid var(--ibd);margin-top:4px;padding-top:8px;border-bottom:none"><span class="sl2" style="font-weight:700">סה"כ הולך לפרישה</span><span class="sv2" style="font-weight:700;color:var(--indigo)">'+fmtN(mGem+mHish)+'/חודש</span></div>'
+    +'</div>'
+    +'<p style="font-size:11px;color:var(--txt3);margin-top:9px">המשכנתא תסתיים עד גיל הפרישה ('+yWork+' שנות עבודה) — בפרישה אין תשלום משכנתא</p>';
 
   // Mortgage box
   var mortPct = desired>0 ? mortMo/desired*100 : 0;

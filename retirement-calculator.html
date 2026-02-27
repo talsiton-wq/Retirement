@@ -637,10 +637,13 @@ function calc(){
   $('tbl').innerHTML = html;
 }
 
-// Init slider fills
+// Init slider fills + select-all on focus for number inputs
 document.addEventListener('DOMContentLoaded', function(){
   updateRange($('retRate'));
   updateRange($('wdRate'));
+  document.querySelectorAll('input[type=number]').forEach(function(el){
+    el.addEventListener('focus', function(){ this.select(); });
+  });
 });
 
 calc();

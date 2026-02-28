@@ -814,16 +814,19 @@ function calc(){
     +'</div>';
 
   // Monthly commitment breakdown
-  var netInHand   = (avgSal + extras)*0.55;   // extras are also taxed
-  // from net: only mortgage + equity investment are "voluntary" out-of-pocket
-  // pension/keren hishtalmut come from gross before net
-  var fromNet     = mortMo + mEq;
-  var leftOver    = netInHand - fromNet;
-  var feasible    = leftOver >= 0;
-  var fCol = feasible ? 'var(--green)' : 'var(--red)';
-  var fBg  = feasible ? 'var(--glt)'   : 'var(--rlt)';
-  var fBd  = feasible ? 'var(--gbd)'   : 'var(--rbd)';
+  var netInHand   = (avgSal + extras)*0.55;
+  var leftOver1   = netInHand - mortMo - s1_eq;
+  var leftOver3   = netInHand - mortMo - s3_eq;
+  var feasible1   = leftOver1 >= 0;
+  var feasible3   = leftOver3 >= 0;
   var sh   = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:9px';
+
+  function feasCell(lo, feasible) {
+    var col = feasible ? 'var(--green)' : 'var(--red)';
+    return '<div style="text-align:center;padding:6px 4px;font-size:16px;font-weight:900;color:'+col+'">'+(lo<0?'−':'')+fmtN(Math.abs(lo))+'</div>'
+      +'<div style="font-size:10px;text-align:center;color:'+col+';padding-bottom:4px">'
+      +(feasible?'✓ אפשרי':'✗ גירעון של '+fmtN(Math.abs(lo)))+'</div>';
+  }
 
   $('salBody').innerHTML =
 
@@ -837,76 +840,68 @@ function calc(){
     +'<div style="font-size:11px;color:var(--txt3)">ריבית '+num('mortR').toFixed(1)+'% · בסיום: המשכנתא נגמרת בגיל הפרישה</div>'
     +'</div>'
 
-    // ── BLOCK 2: Savings ──
+    // ── BLOCK 2: Savings — 2 scenarios ──
     +'<div style="border:1px solid var(--ibd);border-radius:11px;padding:13px;margin-bottom:11px">'
     +'<div style="'+sh.replace('var(--txt3)','var(--indigo)').replace('var(--bdr)','var(--ibd)')+'">📦 לחיסכון לפרישה</div>'
-    +'<div class="sr"><span class="sl2">גמל / פנסיה (20.83% מהברוטו למס) <span style="font-size:10px;color:var(--txt3)">— מהברוטו, לא מהנטו</span></span><span class="sv2">'+fmtN(mGem)+'</span></div>'
-    +'<div class="sr"><span class="sl2">קרן השתלמות <span style="font-size:10px;color:var(--txt3)">— מהברוטו, לא מהנטו</span></span><span class="sv2">'+fmtN(mHish)+'</span></div>'
-    +'<div class="sr"><span class="sl2">השקעה עצמאית — ETF / שוק ההון <span style="font-size:10px;color:var(--purple)">— מהנטו שלך</span></span><span class="sv2" style="color:var(--purple)">'+fmtN(mEq)+'</span></div>'
-    +'<div class="sr" style="padding-top:9px;margin-top:5px;border-top:2px solid var(--ibd);border-bottom:none"><span class="sl2" style="font-weight:700">סה"כ לחיסכון</span><span class="sv2" style="font-size:15px;color:var(--indigo)">'+fmtN(mTot)+'/חודש</span></div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr>'
+    +'<th style="text-align:right;padding:4px 4px;border-bottom:2px solid var(--ibd);color:var(--txt3);font-weight:600"> </th>'
+    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--ibd);color:var(--amber)">🟠 ריקון מלא</th>'
+    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--ibd);color:var(--purple)">💜 יעד '+fmtM(targetRem)+'</th>'
+    +'</tr></thead><tbody>'
+    +'<tr style="color:var(--txt2)">'
+    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">גמל / פנסיה <span style="font-size:10px;color:var(--txt3)">(מברוטו)</span></td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mGem)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mGem)+'</td>'
+    +'</tr>'
+    +'<tr style="color:var(--txt2)">'
+    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">קרן השתלמות <span style="font-size:10px;color:var(--txt3)">(מברוטו)</span></td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
+    +'</tr>'
+    +'<tr style="color:#7c3aed;font-weight:700">'
+    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">שוק ההון <span style="font-size:10px;font-weight:400">(מנטו)</span></td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s1_eq)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s3_eq)+'</td>'
+    +'</tr>'
+    +'<tr style="font-weight:900;font-size:13px">'
+    +'<td style="padding:6px 4px;color:var(--txt1)">סה"כ לחיסכון</td>'
+    +'<td style="text-align:center;padding:6px 6px;color:var(--amber)">'+fmtN(s1_ts)+'/חודש</td>'
+    +'<td style="text-align:center;padding:6px 6px;color:var(--purple)">'+fmtN(s3_ts)+'/חודש</td>'
+    +'</tr>'
+    +'</tbody></table>'
     +'</div>'
 
-    // ── BLOCK 3: Current cashflow feasibility ──
-    +'<div style="background:'+fBg+';border:1.5px solid '+fBd+';border-radius:12px;padding:14px;margin-bottom:11px">'
+    // ── BLOCK 3: Feasibility — 2 scenarios ──
+    +'<div style="border:1px solid var(--bdr);border-radius:11px;padding:13px">'
     +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px">💳 האם זה אפשרי עם המשכורת הנוכחית?</div>'
-    +'<div class="sr"><span class="sl2">נטו ביד ~55% \u00d7 ('+(extras>0?fmtN(avgSal)+' + '+fmtN(extras):fmtN(avgSal))+')</span><span class="sv2">'+fmtN(netInHand)+'</span></div>'
-    +'<div class="sr"><span class="sl2">− משכנתא חודשית</span><span class="sv2" style="color:var(--red)">−'+fmtN(mortMo)+'</span></div>'
-    +'<div class="sr"><span class="sl2">− השקעה עצמאית (שוק ההון)</span><span class="sv2" style="color:var(--purple)">−'+fmtN(mEq)+'</span></div>'
-    +'<div class="sr" style="padding-top:9px;margin-top:5px;border-top:2px solid '+fBd+';border-bottom:none">'
-    +'<span class="sl2" style="font-weight:700">= נשאר למחיה</span>'
-    +'<span class="sv2" style="font-size:18px;font-weight:900;color:'+fCol+'">'+(leftOver<0?'−':'')+fmtN(Math.abs(leftOver))+'</span>'
-    +'</div>'
-    +(feasible
-      ?'<div style="font-size:11px;color:var(--green);margin-top:6px">✓ אפשרי — נשאר לך '+fmtN(leftOver)+' למחיה לאחר כל ההתחייבויות</div>'
-      :'<div style="font-size:11px;color:var(--red);margin-top:6px">\u26a0\ufe0f גירעון — ההכנסה הנוכחית קצרה ב-'+fmtN(Math.abs(leftOver))+' לכיסוי משכנתא + השקעה עצמאית</div>')
-    +'<div style="font-size:10px;color:var(--txt3);margin-top:5px">הפרשות גמל וקרה"ש מגיעות מהברוטו — לא נלקחות מהנטו ביד</div>'
-    +'</div>'
-
-    // ── BLOCK 4: Bridge to 60 ──
-    +(function(){
-      var b60Ok  = drawTo60 >= desired;
-      var b60Pct = desired > 0 ? Math.round(drawTo60/desired*100) : 0;
-      var bc = b60Ok ? 'var(--green)' : 'var(--red)';
-      var bbg= b60Ok ? 'var(--glt)'  : 'var(--rlt)';
-      var bbd= b60Ok ? 'var(--gbd)'  : 'var(--rbd)';
-      var p60Ok  = safeAt60 >= desired;
-      var p60Pct = desired > 0 ? Math.round(safeAt60/desired*100) : 0;
-      var pc = p60Ok ? 'var(--green)' : safeAt60/desired >= 0.7 ? 'var(--amber)' : 'var(--red)';
-      return '<div style="border:1.5px solid var(--bdr);border-radius:12px;padding:13px">'
-        +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt2);padding-bottom:7px;border-bottom:1px solid var(--bdr);margin-bottom:10px">🌉 גישור עד גיל 60</div>'
-        // --- Bridge block ---
-        +'<div style="background:'+bbg+';border:1px solid '+bbd+';border-radius:9px;padding:11px;margin-bottom:9px">'
-        +'<div style="font-size:11px;color:var(--txt2);margin-bottom:7px;font-weight:700">מגיל הפרישה ('+retAge+') עד גיל 60 — '+gapTo60+' שנים</div>'
-        +'<div style="font-size:10px;color:var(--txt3);margin-bottom:8px">מה שיש: קרן השתלמות + הון עצמי · גמל/פנסיה נעול עד 60</div>'
-        +'<div class="sr"><span class="sl2">הון נזיל בפרישה</span><span class="sv2">'+fmtM(liquid)+'</span></div>'
-        +'<div class="sr"><span class="sl2">משיכה חודשית אפשרית (כולל קרן)</span><span class="sv2" style="font-size:16px;font-weight:900;color:'+bc+'">'+fmtK(drawTo60)+'</span></div>'
-        +'<div class="sr"><span class="sl2">יעד (הכנסה רצויה)</span><span class="sv2">'+fmtK(desired)+'</span></div>'
-        +'<div style="margin-top:8px;font-size:12px;font-weight:700;color:'+bc+'">'
-        +(b60Ok ? '✓ הגישור אפשרי — '+b60Pct+'% מהיעד' : '✗ חסר עד גיל 60 — '+b60Pct+'% מהיעד ('+fmtK(desired-drawTo60)+' פחות)')
-        +'</div>'
-        +'</div>'
-        // --- At 60 block (orange scenario: liquid=0, gemel only) ---
-        +'<div style="background:var(--plt);border:1px solid var(--pbd);border-radius:9px;padding:11px">'
-        +'<div style="font-size:11px;color:var(--txt2);margin-bottom:5px;font-weight:700">💜 בגיל 60 — אם בחרת בכתום (ריקון נזיל)</div>'
-        +'<div style="font-size:10px;color:var(--txt3);margin-bottom:8px">הנזיל <strong>נגמר לגמרי</strong> בגיל 60. מה שנשאר הוא הגמל שצמח '+gapTo60+' שנה ללא כל משיכה:</div>'
-        +'<div class="sr"><span class="sl2">גמל בפרישה</span><span class="sv2">'+fmtM(locked)+'</span></div>'
-        +'<div class="sr"><span class="sl2">+ צמיחה של '+gapTo60+' שנה ('+( r*100).toFixed(1)+'% ריאלי)</span><span class="sv2" style="color:var(--green)">+'+fmtM(gRAt60-locked)+'</span></div>'
-        +'<div class="sr" style="border-top:2px solid var(--pbd);padding-top:8px;margin-top:4px"><span class="sl2" style="font-weight:700">= גמל בגיל 60</span><span class="sv2" style="font-size:16px;font-weight:900;color:var(--purple)">'+fmtM(gRAt60)+'</span></div>'
-        +'<div class="sr"><span class="sl2">משיכה לנצח ממנו ('+(wd*100).toFixed(1)+'% בשנה)</span><span class="sv2" style="font-size:15px;font-weight:900;color:'+pc+'">'+fmtK(safeAt60)+'/חודש</span></div>'
-        +'<div class="sr"><span class="sl2">יעד</span><span class="sv2">'+fmtK(desired)+'/חודש</span></div>'
-        +'<div style="margin-top:8px;font-size:12px;font-weight:700;color:'+pc+'">'
-        +(p60Ok ? '✓ גמל לבד מספיק — '+p60Pct+'% מהיעד' : '⚠ גמל לבד = '+p60Pct+'% מהיעד · שקול למשוך פחות מהנזיל (הירוק) ולהשאיר חלק לגיל 60')
-        +'</div>'
-        +'</div>'
-        // --- Bonus: green scenario ---
-        +(gapTo60>0
-          ? '<div style="margin-top:8px;padding:9px 12px;background:#f8fafc;border:1px dashed var(--bdr);border-radius:8px;font-size:11px;color:var(--txt2);line-height:1.7">'
-            +'💡 <strong>אם תמשוך פחות (הירוק '+fmtK(safeMo)+'/חודש):</strong> הנזיל לא נגמר — '
-            +'יישארו '+fmtM(liquidAt60_green)+' נזיל + '+fmtM(gRAt60)+' גמל = <strong>'+fmtM(totAt60_green)+'</strong> · SWR: <strong>'+fmtK(safeAt60_green)+'/חודש</strong>'
-            +'</div>'
-          : '')
-        +'</div>';
-    })();
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr>'
+    +'<th style="text-align:right;padding:4px 4px;border-bottom:2px solid var(--bdr);color:var(--txt3);font-weight:600"> </th>'
+    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--amber)">🟠 ריקון מלא</th>'
+    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--purple)">💜 יעד '+fmtM(targetRem)+'</th>'
+    +'</tr></thead><tbody>'
+    +'<tr style="color:var(--txt2)">'
+    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">נטו ביד (~55%)</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">'+fmtN(netInHand)+'</td>'
+    +'</tr>'
+    +'<tr style="color:var(--red)">'
+    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">− משכנתא</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">−'+fmtN(mortMo)+'</td>'
+    +'</tr>'
+    +'<tr style="color:#7c3aed;font-weight:700">'
+    +'<td style="padding:5px 4px;border-bottom:2px solid var(--bdr)">− שוק ההון</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">−'+fmtN(s1_eq)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">−'+fmtN(s3_eq)+'</td>'
+    +'</tr>'
+    +'<tr style="font-weight:700">'
+    +'<td style="padding:6px 4px;color:var(--txt1)">=  נשאר למחיה</td>'
+    +'<td style="padding:2px 6px">'+feasCell(leftOver1,feasible1)+'</td>'
+    +'<td style="padding:2px 6px">'+feasCell(leftOver3,feasible3)+'</td>'
+    +'</tr>'
+    +'</tbody></table>'
+    +'<div style="font-size:10px;color:var(--txt3);margin-top:8px;border-top:1px solid var(--bdr);padding-top:6px">הפרשות גמל וקרה"ש מגיעות מהברוטו — לא נלקחות מהנטו ביד</div>'
+    +'</div>';
 
   // Mortgage box
   var mortPct = desired>0 ? mortMo/desired*100 : 0;

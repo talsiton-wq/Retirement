@@ -58,7 +58,11 @@ body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--txt);direct
 .ch{padding:15px 20px 13px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
 .ci{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .ci-i{background:var(--ilt)} .ci-g{background:var(--glt)} .ci-a{background:var(--alt)} .ci-p{background:var(--plt)} .ci-c{background:var(--clt)}
-.ch h2{font-size:14px;font-weight:700} .ch p{font-size:11px;color:var(--txt3);margin-top:1px}
+.ch h2{font-size:15px;font-weight:800} .ch p{font-size:11px;color:var(--txt3);margin-top:2px}
+.ch-g{background:linear-gradient(135deg,var(--glt),#f0fdf4);border-bottom-color:var(--gbd)!important}
+.ch-p{background:linear-gradient(135deg,var(--plt),#f0f0ff);border-bottom-color:var(--pbd)!important}
+.ch-i{background:linear-gradient(135deg,var(--ilt),#e8f0fe);border-bottom-color:var(--ibd)!important}
+.ch-a{background:linear-gradient(135deg,var(--alt),#fef9e7);border-bottom-color:var(--abd)!important}
 .cb{padding:18px 20px}
 
 /* ── SECTION TITLE ── */
@@ -410,11 +414,6 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
 
           <div class="st"><div class="sd" style="background:var(--green)"></div>יעדים כספיים</div>
           <div class="fld">
-            <label>מחיה נטו עד לפרישה <span class="bi">למלא</span></label>
-            <div class="iw"><input type="number" id="preLiving" value="20000" oninput="calc()"><span class="iu">₪/חודש</span></div>
-            <div class="note">היתרה מנטו ביד → שוק ההון</div>
-          </div>
-          <div class="fld">
             <label>הכנסה רצויה בפרישה (ברוטו) <span class="bi">למלא</span></label>
             <div class="iw"><input type="number" id="desired" value="30000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           </div>
@@ -447,19 +446,19 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
     <!-- Right: results -->
     <div class="res">
       <div class="card">
-        <div class="ch"><div class="ci ci-g">🏖️</div><div><h2>נקודת פרישה</h2><p>מה שיש ביום הפרישה — נזיל ולא נזיל</p></div></div>
+        <div class="ch ch-g"><div class="ci ci-g">🏖️</div><div><h2>נקודת פרישה</h2><p>מה שיש ביום הפרישה — נזיל, נדל"ן, ונעול</p></div></div>
         <div class="cb" id="tc1">—</div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ci ci-p">🌉</div><div><h2>גישור</h2><p>כמה נזיל נדרש ומה חסר</p></div></div>
+        <div class="ch ch-p"><div class="ci ci-p">🌉</div><div><h2>גישור</h2><p>כמה נזיל נדרש ומה חסר</p></div></div>
         <div class="cb" id="tc2">—</div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ci ci-i">💰</div><div><h2>פנסיה</h2><p>קצבה חודשית ויתרה הונית</p></div></div>
+        <div class="ch ch-i"><div class="ci ci-i">💰</div><div><h2>פנסיה</h2><p>קצבה חודשית ויתרה הונית</p></div></div>
         <div class="cb" id="tc3">—</div>
       </div>
       <div class="card">
-        <div class="ch"><div class="ci ci-a">📊</div><div><h2>חישוב הגישור</h2><p>עבור כל y — מה s הנדרש</p></div></div>
+        <div class="ch ch-a"><div class="ci ci-a">📊</div><div><h2>חישוב הגישור</h2><p>עבור כל y — מה s הנדרש</p></div></div>
         <div class="cb" id="tc4">—</div>
       </div>
     </div>
@@ -474,7 +473,7 @@ var hishMode = 1;
 function updateRange(el){
   var min=parseFloat(el.min), max=parseFloat(el.max), val=parseFloat(el.value);
   var pct=(val-min)/(max-min)*100;
-  el.style.background='linear-gradient(to left,var(--indigo) '+pct+'%,var(--bdr) '+pct+'%)';
+  el.style.background='linear-gradient(to right,var(--indigo) '+pct+'%,var(--bdr) '+pct+'%)';
 }
 
 function flash(id){
@@ -528,6 +527,7 @@ function calc(){
   var rM     = r/12;
   var wd     = 0.04; // fixed SWR for edge case (retire at/after 60)
   var annuityFactor = num('annuityFactor') || 240;
+  var mortMo = num('mortMo');
   var iH=num('iH'), iE=num('iE'), iP=num('iP');
 
   var extras    = num('extras');
@@ -562,6 +562,8 @@ function calc(){
   var gR  = fvA(mGem,  rM, n*12) + fvP(iP, r, n);   // LOCKED until penAge
   var hR  = fvA(mHish, rM, n*12) + fvP(iH, r, n);   // liquid from day 1
   var fvI_g = fvP(iP, r, n), fvI_h = fvP(iH, r, n), fvI_e = fvP(iE, r, n);
+  // Mortgage: payments over n years grow at market rate → property equity at retirement
+  var propR = mortMo>0 ? fvA(mortMo, rM, n*12) : 0;
 
   var n60    = gapTo60 * 12;
   var gRAt60 = fvP(gR, rM, n60);   // gemel grows untouched until penAge
@@ -572,46 +574,82 @@ function calc(){
             : desired*n60+targetRem)
     : (desired+targetRem)*12/wd;
 
-  // What we accumulate without NEW equity contributions (known: keren + existing equity)
+  // What we accumulate without NEW equity contributions (liq = keren + existing equity)
+  // Property (propR) shown separately — user may or may not sell at retirement
   var liqAvail = hR + fvI_e;
-  var capGap2  = Math.max(0, s3_req - liqAvail);
+  var liqWithProp = liqAvail + propR;
+  var capGap2  = Math.max(0, s3_req - liqAvail);        // gap without selling property
+  var capGap2P = Math.max(0, s3_req - liqWithProp);     // gap if property sold
   var fvFactor = (n>0 && rM>0) ? rM/(Math.pow(1+rM,n*12)-1) : (n>0 ? 1/(n*12) : 0);
-  var s3_eq    = capGap2>0 ? capGap2*fvFactor : 0;
+  var s3_eq    = capGap2P>0 ? capGap2P*fvFactor : 0;   // needed even after selling prop
 
   // ════════════════════════════════════════════════
   // CARD 1 — נקודת פרישה
   // ════════════════════════════════════════════════
   function fundCard(icon,name,col,bg,bd,initAmt,mo,total,fvInit,fvContr,note){
-    return '<div style="border:1px solid '+bd+';border-radius:10px;padding:12px;background:'+bg+';margin-bottom:10px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">'
+    var rows='';
+    if(initAmt>0) rows+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.07)">'
+      +'<span style="color:var(--txt2);font-size:11px">💰 הון קיים: <strong>'+fmtN(initAmt)+'</strong> צומח ב-<strong>'+(r*100).toFixed(1)+'%</strong> × '+n+' שנים</span>'
+      +'<span style="font-weight:800;font-size:13px;color:'+col+'">'+fmtM(fvInit)+'</span></div>';
+    if(mo>0) rows+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.07)">'
+      +'<span style="color:var(--txt2);font-size:11px">📥 הפרשה: <strong>'+fmtN(mo)+'</strong>/חודש × '+n*12+' חודשים @ <strong>'+(r*100).toFixed(1)+'%</strong></span>'
+      +'<span style="font-weight:800;font-size:13px;color:'+col+'">'+fmtM(fvContr)+'</span></div>';
+    rows+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0 2px">'
+      +'<span style="font-weight:700;font-size:12px;color:var(--txt2)">📍 סה"כ ביום הפרישה</span>'
+      +'<span style="font-weight:900;font-size:16px;color:'+col+'">'+fmtM(total)+'</span></div>';
+    return '<div style="border:1.5px solid '+bd+';border-radius:11px;padding:12px 14px;background:'+bg+';margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
       +'<span style="font-size:13px;font-weight:800;color:'+col+'">'+icon+' '+name+'</span>'
-      +'<span style="font-size:20px;font-weight:900;color:'+col+'">'+fmtM(total)+'</span></div>'
-      +'<div style="font-size:10px;color:var(--txt3);line-height:1.8;padding:7px 9px;background:rgba(255,255,255,.6);border-radius:7px">'
-      +(initAmt>0?'<div style="display:flex;justify-content:space-between"><span>💰 יתרה קיימת ('+fmtN(initAmt)+') × '+(r*100).toFixed(1)+'% × '+n+' שנים</span><span style="font-weight:700;color:'+col+'">+'+fmtM(fvInit)+'</span></div>':'')
-      +(mo>0?'<div style="display:flex;justify-content:space-between"><span>📥 '+fmtN(mo)+'/חודש × '+n*12+' חודשים @ '+(r*100).toFixed(1)+'%</span><span style="font-weight:700;color:'+col+'">+'+fmtM(fvContr)+'</span></div>':'')
-      +'<div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(0,0,0,.1);padding-top:4px;margin-top:4px"><span style="font-weight:700">סה"כ ביום הפרישה</span><span style="font-size:14px;font-weight:900;color:'+col+'">'+fmtM(total)+'</span></div>'
-      +(note?'<div style="margin-top:5px;font-size:9px;padding:4px 6px;background:rgba(0,0,0,.04);border-radius:5px">'+note+'</div>':'')
-      +'</div></div>';
+      +'<span style="font-size:22px;font-weight:900;color:'+col+'">'+fmtM(total)+'</span></div>'
+      +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:2px 10px">'+rows+'</div>'
+      +(note?'<div style="margin-top:7px;font-size:10px;color:var(--txt2);padding:4px 7px;background:rgba(0,0,0,.05);border-radius:5px">'+note+'</div>':'')
+      +'</div>';
   }
   var tc1='';
-  tc1+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
-  tc1+='<div style="background:var(--glt);border:1.5px solid var(--gbd);border-radius:12px;padding:14px;text-align:center">'
-    +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--green);margin-bottom:4px">✓ נזיל</div>'
-    +'<div style="font-size:26px;font-weight:900;color:var(--green)">'+fmtM(liqAvail)+'</div>'
-    +'<div style="font-size:10px;color:var(--txt3);margin-top:3px">קרה"ש + שוק ההון (הון קיים)</div></div>';
+  // Hero summary row
+  var heroGrid= mortMo>0
+    ? '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">'
+    : '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
+  tc1+=heroGrid;
+  tc1+='<div style="background:var(--glt);border:1.5px solid var(--gbd);border-radius:12px;padding:12px;text-align:center">'
+    +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--green);margin-bottom:4px">✓ נזיל</div>'
+    +'<div style="font-size:22px;font-weight:900;color:var(--green)">'+fmtM(liqAvail)+'</div>'
+    +'<div style="font-size:9px;color:var(--txt3);margin-top:2px">קרה"ש + שוק ההון</div></div>';
+  if(mortMo>0){
+    tc1+='<div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:12px;text-align:center">'
+      +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#ea580c;margin-bottom:4px">🏠 נדל"ן</div>'
+      +'<div style="font-size:22px;font-weight:900;color:#ea580c">'+fmtM(propR)+'</div>'
+      +'<div style="font-size:9px;color:var(--txt3);margin-top:2px">הון מצטבר ב-'+n+' שנים</div></div>';
+  }
   tc1+=gapTo60>0
-    ?'<div style="background:var(--rlt);border:1.5px solid var(--rbd);border-radius:12px;padding:14px;text-align:center">'
-      +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--red);margin-bottom:4px">🔒 נעול עד גיל '+penAge+'</div>'
-      +'<div style="font-size:26px;font-weight:900;color:var(--red)">'+fmtM(gR)+'</div>'
-      +'<div style="font-size:10px;color:var(--txt3);margin-top:3px">גמל / פנסיה</div></div>'
-    :'<div style="background:var(--ilt);border:1.5px solid var(--ibd);border-radius:12px;padding:14px;text-align:center">'
-      +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--indigo);margin-bottom:4px">✓ פתוח מיד</div>'
-      +'<div style="font-size:26px;font-weight:900;color:var(--indigo)">'+fmtM(gR)+'</div>'
-      +'<div style="font-size:10px;color:var(--txt3);margin-top:3px">גמל (פרישה בגיל 60+)</div></div>';
+    ?'<div style="background:var(--rlt);border:1.5px solid var(--rbd);border-radius:12px;padding:12px;text-align:center">'
+      +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--red);margin-bottom:4px">🔒 נעול עד גיל '+penAge+'</div>'
+      +'<div style="font-size:22px;font-weight:900;color:var(--red)">'+fmtM(gR)+'</div>'
+      +'<div style="font-size:9px;color:var(--txt3);margin-top:2px">גמל / פנסיה</div></div>'
+    :'<div style="background:var(--ilt);border:1.5px solid var(--ibd);border-radius:12px;padding:12px;text-align:center">'
+      +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--indigo);margin-bottom:4px">✓ פתוח מיד</div>'
+      +'<div style="font-size:22px;font-weight:900;color:var(--indigo)">'+fmtM(gR)+'</div>'
+      +'<div style="font-size:9px;color:var(--txt3);margin-top:2px">גמל (פרישה 60+)</div></div>';
   tc1+='</div>';
-  tc1+='<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">פירוט לפי קופה</div>';
+  tc1+='<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:10px">פירוט — כיצד הגענו לכל סכום?</div>';
   tc1+=fundCard('🟡','קרן השתלמות','#d97706','#fffbeb','#fde68a',iH,mHish,hR,fvI_h,hR-fvI_h,'✓ נזיל מיד · ישמש לגישור');
-  tc1+=fundCard('🟣','שוק ההון','#7c3aed','#f5f3ff','#ddd6fe',iE,0,fvI_e,fvI_e,0,'✓ נזיל מיד · צמיחת הון קיים בלבד (ללא הפקדות חדשות)');
+  tc1+=fundCard('🟣','שוק ההון','#7c3aed','#f5f3ff','#ddd6fe',iE,0,fvI_e,fvI_e,0,'✓ נזיל מיד · צמיחת הון קיים בלבד (ללא הפקדות חדשות — זה מה שנפתור בכרטיסיה 4)');
+  if(mortMo>0){
+    tc1+='<div style="border:1.5px solid #fed7aa;border-radius:11px;padding:12px 14px;background:#fff7ed;margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+      +'<span style="font-size:13px;font-weight:800;color:#ea580c">🏠 נדל"ן / דירה</span>'
+      +'<span style="font-size:22px;font-weight:900;color:#ea580c">'+fmtM(propR)+'</span></div>'
+      +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:2px 10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.07)">'
+      +'<span style="color:var(--txt2);font-size:11px">💸 החזר משכנתא: <strong>'+fmtN(mortMo)+'</strong>/חודש × '+n*12+' חודשים — צובר הון בנכס @ <strong>'+(r*100).toFixed(1)+'%</strong></span>'
+      +'<span style="font-weight:800;font-size:13px;color:#ea580c">'+fmtM(propR)+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;padding:7px 0 2px">'
+      +'<span style="font-weight:700;font-size:12px;color:var(--txt2)">📍 שווי נכס ביום הפרישה (אחרי '+n+' שנות החזר)</span>'
+      +'<span style="font-weight:900;font-size:16px;color:#ea580c">'+fmtM(propR)+'</span></div>'
+      +'</div>'
+      +'<div style="margin-top:7px;font-size:10px;color:var(--txt2);padding:4px 7px;background:rgba(0,0,0,.05);border-radius:5px">🏠 ניתן למכור לגישור · המשכנתא נסגרת בגיל הפרישה</div>'
+      +'</div>';
+  }
   tc1+=fundCard('🔵','גמל / פנסיה','#4f46e5','#eef2ff','#c7d2fe',iP,mGem,gR,fvI_g,gR-fvI_g,
     gapTo60>0?'🔒 נעול עד גיל '+penAge+' · ממשיך לצמוח ללא משיכה':'✓ פתוח מיד — פרישה בגיל '+penAge+'+');
   $('tc1').innerHTML=tc1;
@@ -621,50 +659,57 @@ function calc(){
   // ════════════════════════════════════════════════
   var tc2='';
   // Section: Required liquid + formula explanation
-  tc2+='<div style="background:var(--plt);border:1.5px solid var(--pbd);border-radius:12px;padding:14px;margin-bottom:12px">'
-    +'<div style="font-size:11px;font-weight:700;color:#7c3aed;margin-bottom:6px">כמה כסף נזיל נדרש ביום הפרישה?</div>'
-    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">'
+  tc2+='<div style="background:var(--plt);border:1.5px solid var(--pbd);border-radius:12px;padding:15px;margin-bottom:14px">'
+    +'<div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:7px">כמה כסף נזיל נדרש ביום הפרישה?</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">'
     +'<span style="font-size:13px;color:var(--txt2)">נזיל נדרש לגישור</span>'
-    +'<span style="font-size:24px;font-weight:900;color:#7c3aed">'+fmtM(s3_req)+'</span></div>';
+    +'<span style="font-size:26px;font-weight:900;color:#7c3aed">'+fmtM(s3_req)+'</span></div>';
   if(gapTo60>0){
-    tc2+='<div style="font-size:10px;color:var(--txt3);line-height:1.75;padding:7px 9px;background:rgba(255,255,255,.55);border-radius:7px">'
-      +'<div style="font-weight:700;color:#7c3aed;margin-bottom:3px">כיצד חישבנו (ערך נוכחי של קצבה):</div>'
-      +'<div>יש לגשר <strong>'+gapTo60+' שנים</strong> ('+n60+' חודשים) מגיל '+retAge+' עד גיל '+penAge+' שבו נפתח הגמל.</div>'
-      +'<div>ההכנסה הרצויה: <strong>'+fmtN(desired)+'/חודש</strong>. הכסף שנותר ממשיך לצמוח ב-'+(r*100).toFixed(1)+'%/שנה.</div>'
-      +'<div style="margin:5px 0 3px;padding:4px 8px;background:rgba(124,58,237,.07);border-radius:5px;font-family:monospace;font-size:9px">'
-      +'PV = '+fmtN(desired)+' × (1 − (1+'+(rM*100).toFixed(3)+'%)<sup style="font-size:8px">−'+n60+'</sup>) ÷ '+(rM*100).toFixed(3)+'%'
-      +(targetRem>0?' + '+fmtM(targetRem)+' × (1+'+(rM*100).toFixed(3)+'%)<sup style="font-size:8px">−'+n60+'</sup>':'')+'</div>'
-      +(targetRem>0?'<div>+ <strong>'+fmtM(targetRem)+'</strong> שתרצה לשמור הוני בגיל '+penAge+' (ערך נוכחי: '+fmtM(targetRem*Math.pow(1+rM,-n60))+')</div>':'')
+    tc2+='<div style="font-size:11px;color:var(--txt2);line-height:1.8;padding:10px 12px;background:rgba(255,255,255,.65);border-radius:8px">'
+      +'<div style="font-weight:700;color:#7c3aed;margin-bottom:5px;font-size:12px">📐 כיצד חישבנו — ערך נוכחי של קצבה:</div>'
+      +'<div>• יש לגשר <strong>'+gapTo60+' שנים</strong> ('+n60+' חודשים) מגיל <strong>'+retAge+'</strong> עד גיל <strong>'+penAge+'</strong> שבו נפתח הגמל.</div>'
+      +'<div>• ההכנסה הרצויה: <strong style="color:#7c3aed">'+fmtN(desired)+'</strong>/חודש. הכסף שנותר ממשיך לצמוח ב-<strong>'+(r*100).toFixed(1)+'%</strong>/שנה, לכן צריך פחות מ-'+fmtN(desired*n60)+'.</div>'
+      +'<div style="margin:7px 0 4px;padding:6px 10px;background:rgba(124,58,237,.1);border-radius:6px;font-size:10px;font-family:monospace;color:#4c1d95">'
+      +'PV = '+fmtN(desired)+' × (1 − (1+'+(rM*100).toFixed(3)+'%)<sup>−'+n60+'</sup>) ÷ '+(rM*100).toFixed(3)+'% = <strong>'+fmtM(rM>0?desired*(1-Math.pow(1+rM,-n60))/rM:desired*n60)+'</strong>'
+      +(targetRem>0?'<br>+ '+fmtM(targetRem)+' × (1+'+(rM*100).toFixed(3)+'%)<sup>−'+n60+'</sup> = <strong>+'+fmtM(targetRem*Math.pow(1+rM,-n60))+'</strong>':'')+'</div>'
+      +(targetRem>0?'<div>• + <strong style="color:#7c3aed">'+fmtM(targetRem)+'</strong> שתרצה לשמור הוני בגיל '+penAge+' (ערך נוכחי היום: '+fmtM(targetRem*Math.pow(1+rM,-n60))+')</div>':'')
       +'</div>';
   } else {
-    tc2+='<div style="font-size:10px;color:var(--txt3);line-height:1.65;padding:5px 8px;background:rgba(255,255,255,.5);border-radius:6px">'
-      +'פרישה בגיל 60+ — הגמל נפתח מיד. אין גישור. חישוב SWR 4% לצמיתות.'
+    tc2+='<div style="font-size:11px;color:var(--txt2);line-height:1.7;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px">'
+      +'פרישה בגיל 60+ — הגמל נפתח מיד. אין גישור. חישוב SWR 4% לצמיתות: '+fmtM(s3_req)+' × 4% ÷ 12 = '+fmtN(desired)+'/חודש.'
       +'</div>';
   }
   tc2+='</div>';
   // Section: What we have vs what's needed
-  tc2+='<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">מה יש לנו לגישור?</div>'
-    +'<div style="background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;line-height:2.3">'
-    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">קרן השתלמות (הפרשות + הון קיים)</span><span style="font-weight:700;color:var(--amber)">'+fmtM(hR)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">שוק ההון (הון קיים בלבד, ללא הפקדות חדשות)</span><span style="font-weight:700;color:var(--purple)">'+fmtM(fvI_e)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;border-top:1.5px solid var(--bdr);padding-top:6px;margin-top:4px">'
-    +'<span style="font-weight:700">סה"כ נזיל</span>'
+  tc2+='<div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:8px">מה יש לנו לגישור?</div>'
+    +'<div style="background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:13px;margin-bottom:12px;font-size:12px;line-height:2.4">'
+    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">🟡 קרן השתלמות (הפרשות + הון קיים)</span><span style="font-weight:700;color:var(--amber)">'+fmtM(hR)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">🟣 שוק ההון (הון קיים בלבד)</span><span style="font-weight:700;color:var(--purple)">'+fmtM(fvI_e)+'</span></div>'
+    +(propR>0?'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">🏠 נדל"ן (אם נמכר בפרישה)</span><span style="font-weight:700;color:#ea580c">'+fmtM(propR)+'</span></div>':'')
+    +'<div style="display:flex;justify-content:space-between;border-top:1.5px solid var(--bdr);padding-top:7px;margin-top:3px">'
+    +'<span style="font-weight:700">סה"כ נזיל (ללא נדל"ן)</span>'
     +'<span style="font-weight:900;font-size:14px;color:var(--green)">'+fmtM(liqAvail)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between"><span style="font-weight:700">נדרש לגישור</span>'
-    +'<span style="font-weight:900;font-size:14px;color:#7c3aed">'+fmtM(s3_req)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;border-top:2px solid '+(capGap2>0?'var(--rbd)':'var(--gbd)')+';padding-top:6px;margin-top:2px">'
-    +'<span style="font-weight:700;color:'+(capGap2>0?'var(--red)':'var(--green)')+'">'+( capGap2>0?'✗ חוסר':'✓ עודף' )+'</span>'
-    +'<span style="font-weight:900;font-size:16px;color:'+(capGap2>0?'var(--red)':'var(--green)')+'">'+fmtM(capGap2>0?capGap2:liqAvail-s3_req)+'</span></div>'
+    +(propR>0?'<div style="display:flex;justify-content:space-between"><span style="font-weight:700">סה"כ כולל נדל"ן</span>'
+      +'<span style="font-weight:900;font-size:14px;color:#ea580c">'+fmtM(liqWithProp)+'</span></div>':'')
+    +'<div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:#7c3aed">נדרש לגישור</span>'
+    +'<span style="font-weight:900;font-size:15px;color:#7c3aed">'+fmtM(s3_req)+'</span></div>'
     +'</div>';
-  if(capGap2>0){
-    tc2+='<div style="background:rgba(220,38,38,.05);border:1.5px solid rgba(220,38,38,.2);border-radius:10px;padding:12px;font-size:11px;color:var(--txt2);line-height:1.7">'
-      +'<strong style="color:var(--red)">מה גורם לחוסר?</strong><br>'
-      +'• שוק ההון מכיל רק את ההון הקיים שלך ('+fmtN(iE)+') ללא הפקדות חדשות.<br>'
-      +'• כדי לסגור את הפער נדרשות הפקדות חודשיות לשוק ההון — ראה "חישוב הגישור" בכרטיסיה 4.'
+  // Gap analysis
+  if(capGap2P<=0){
+    tc2+='<div style="background:var(--glt);border:1.5px solid var(--gbd);border-radius:10px;padding:13px;font-size:12px;color:var(--green);font-weight:700;text-align:center;line-height:1.6">'
+      +'✓ ההון הקיים'+(propR>0?' (כולל מכירת הנדל"ן)':'')+' מספיק לגישור — ללא הפקדות נוספות לשוק ההון!'
+      +'</div>';
+  } else if(capGap2<=0 && propR>0){
+    tc2+='<div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:13px;font-size:12px;line-height:1.7">'
+      +'<div style="font-weight:700;color:#ea580c;margin-bottom:4px">🏠 מכירת הנדל"ן מכסה את הגישור</div>'
+      +'ללא מכירת הנדל"ן יש חוסר של <strong style="color:var(--red)">'+fmtM(capGap2)+'</strong>. עם מכירה — ✓ מספיק.'
       +'</div>';
   } else {
-    tc2+='<div style="background:var(--glt);border:1.5px solid var(--gbd);border-radius:10px;padding:12px;font-size:11px;color:var(--green);font-weight:700;text-align:center">'
-      +'✓ קרן ההשתלמות וההון הקיים בשוק מספיקים לגישור — ללא הפקדות נוספות לשוק ההון!'
+    tc2+='<div style="background:var(--rlt);border:1.5px solid var(--rbd);border-radius:10px;padding:13px;">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline">'
+      +'<span style="font-weight:700;font-size:13px;color:var(--red)">✗ חוסר'+(propR>0?' (גם לאחר מכירת נדל"ן)':'')+'</span>'
+      +'<span style="font-size:24px;font-weight:900;color:var(--red)">'+fmtM(capGap2P)+'</span></div>'
+      +'<div style="font-size:11px;color:var(--txt3);margin-top:4px">ראה "חישוב הגישור" בכרטיסיה 4 — שם תוכל לראות כמה צריך להפריש לשוק ההון לפי שנות עבודה</div>'
       +'</div>';
   }
   $('tc2').innerHTML=tc2;
@@ -719,8 +764,9 @@ function calc(){
     +'<thead><tr>'
     +'<th style="text-align:right">y (שנים)</th>'
     +'<th>גיל פרישה</th>'
-    +'<th>גישור (שנים)</th>'
-    +'<th>נדרש לגישור</th>'
+    +'<th>גישור (שנ\')</th>'
+    +'<th>נדרש</th>'
+    +(mortMo>0?'<th style="color:#ea580c">נדל"ן</th>':'')
     +'<th>נזיל קיים</th>'
     +'<th>חוסר</th>'
     +'<th style="color:var(--indigo)">s (₪/חודש)</th>'
@@ -730,23 +776,26 @@ function calc(){
     if(yTest<1) continue;
     var hR_y=fvA(mHish,rM,yTest*12)+fvP(iH,r,yTest);
     var fvI_e_y=fvP(iE,r,yTest);
+    var propR_y=mortMo>0?fvA(mortMo,rM,yTest*12):0;
     var gapTo60_y=Math.max(0,60-(age+yTest));
     var n60_y=gapTo60_y*12;
     var s3_req_y=gapTo60_y>0
       ?(rM>0?desired*(1-Math.pow(1+rM,-n60_y))/rM+targetRem*Math.pow(1+rM,-n60_y):desired*n60_y+targetRem)
       :(desired+targetRem)*12/wd;
     var liqAvail_y=hR_y+fvI_e_y;
-    var capGap2_y=Math.max(0,s3_req_y-liqAvail_y);
+    var liqWithProp_y=liqAvail_y+propR_y;
+    var capGapP_y=Math.max(0,s3_req_y-liqWithProp_y);
     var fvFactor_y=(yTest>0&&rM>0)?rM/(Math.pow(1+rM,yTest*12)-1):(yTest>0?1/(yTest*12):0);
-    var s_y=capGap2_y<=0?0:capGap2_y*fvFactor_y;
+    var s_y=capGapP_y<=0?0:capGapP_y*fvFactor_y;
     var isCur=(yTest===n);
     tc4+='<tr'+(isCur?' class="cur"':'')+'>'
       +'<td>'+(isCur?'▶ ':'')+yTest+'</td>'
       +'<td>'+(age+yTest)+'</td>'
       +'<td>'+gapTo60_y+'</td>'
       +'<td>'+fmtM(s3_req_y)+'</td>'
+      +(mortMo>0?'<td style="color:#ea580c;font-weight:600">'+fmtM(propR_y)+'</td>':'')
       +'<td style="color:var(--green)">'+fmtM(liqAvail_y)+'</td>'
-      +'<td style="color:'+(capGap2_y>0?'var(--red)':'var(--green)')+'">'+( capGap2_y>0?fmtM(capGap2_y):'✓' )+'</td>'
+      +'<td style="color:'+(capGapP_y>0?'var(--red)':'var(--green)')+'">'+( capGapP_y>0?fmtM(capGapP_y):'✓' )+'</td>'
       +'<td style="font-weight:700;color:'+(s_y>0?'var(--indigo)':'var(--green)')+'">'+( s_y>0?fmtN(s_y):'—' )+'</td>'
       +'</tr>';
   }
@@ -768,7 +817,7 @@ function calc(){
 
 // ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
 var STORAGE_KEY = 'ret_calc_v1';
-var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','preLiving','hishPct','iP','iH','iE','mortMo','targetRem','annuityFactor'];
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','hishPct','iP','iH','iE','mortMo','targetRem','annuityFactor'];
 var PERSIST_RANGE = ['retRate'];
 
 function saveState(){

@@ -366,6 +366,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
         <div class="fld">
           <label>תשלום חודשי <span class="ba">אוטומטי</span></label>
           <div class="af" id="outMort">—</div>
+          <div class="note">ההנחה: המשכנתא נסגרת בדיוק בגיל הפרישה — לא קיימת לאחר מכן</div>
         </div>
 
         <button class="next-btn" onclick="goTo(2)">המשך לניתוח ←</button>
@@ -418,9 +419,9 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <div class="iw"><input type="number" id="desired" value="30000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           </div>
           <div class="fld">
-            <label>רוצה שיישאר בגיל הפנסיה (תרחיש 2) <span class="bi">למלא</span></label>
+            <label>יתרה רצויה בגיל 60 <span class="bi">למלא</span></label>
             <div class="iw"><input type="number" id="targetRem" value="0" oninput="calc()"><span class="iu">₪</span></div>
-            <div class="note">אפס = ריקון מלא · כל סכום = משיכה חודשית נמוכה יותר בגישור</div>
+            <div class="note">0 = ריקון מלא (גמל בלבד מגיל 60) · סכום אחר = משיכה נמוכה יותר בגישור</div>
           </div>
 
           <div class="st"><div class="sd" style="background:var(--cyan)"></div>תשואה ומשיכה</div>
@@ -455,7 +456,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
       </div>
 
       <div class="card">
-        <div class="ch"><div class="ci ci-p">🗓️</div><div><h2>2 תרחישים — מפרישה לקצבה</h2><p>פירוט נכסים מרגע קבלת הקצבה · כמה לחסוך לכל אסטרטגיה</p></div></div>
+        <div class="ch"><div class="ci ci-p">🗓️</div><div><h2 id="scenTitle">תרחיש פרישה</h2><p>גישור עד גיל 60 לפי יתרה רצויה · 0 = ריקון מלא</p></div></div>
         <div class="cb" id="scenBody">—</div>
       </div>
 
@@ -464,25 +465,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
         <div class="cb" id="salBody">—</div>
       </div>
 
-      <div class="card">
-        <div class="ch"><div class="ci ci-c">🏠</div><div><h2>משכנתא</h2><p>עלות ואחוז מהכנסה הרצויה · תקופה = שנות עבודה שנותרות</p></div></div>
-        <div class="cb" id="mortBody">—</div>
-      </div>
 
-      <div class="card">
-        <div class="ch"><div class="ci ci-p">🔀</div>
-          <div><h2>טבלת טריידאוף — משיכה חודשית אפשרית</h2><p>לפי % חיסכון מהשכר חזוי × תשואה ריאלית</p></div>
-        </div>
-        <div class="cb">
-          <div style="display:flex;gap:14px;font-size:11px;margin-bottom:10px;color:var(--txt2);flex-wrap:wrap">
-            <span><span class="cg">■</span> מעל היעד</span>
-            <span><span class="ca">■</span> 70%–100%</span>
-            <span><span class="cr">■</span> מתחת ל-70%</span>
-            <span style="color:var(--txt3)">שורה כחולה = החיסכון הנוכחי שלך</span>
-          </div>
-          <div class="tw"><table id="tbl"></table></div>
-        </div>
-      </div>
 
     </div>
   </div>
@@ -662,15 +645,10 @@ function calc(){
   function calcEq(reqLiq){
     return Math.max(0, Math.max(0, reqLiq-existingLiquidFV)*fvFactor - mHish);
   }
-  // Scenario 1: drain liquid → 0 at 60
-  var s1_req = gapTo60>0 ? (rM>0 ? desired*(1-Math.pow(1+rM,-n60))/rM : desired*n60) : desired*12/wd;
-  var s1_eq  = calcEq(s1_req);
-  var s1_ts  = mGem+mHish+s1_eq;
-  // Scenario 2: SWR — perpetuity target
+  // Scenario 2: SWR — perpetuity target (used for bar scaling)
   var s2_req = desired*12/wd;
   var s2_eq  = calcEq(s2_req);
-  var s2_ts  = mGem+mHish+s2_eq;
-  // Scenario 3: target X remaining at 60
+  // Scenario: target X remaining at 60 (0 = full drain)
   var s3_req = gapTo60>0
     ? (rM>0 ? desired*(1-Math.pow(1+rM,-n60))/rM + targetRem*Math.pow(1+rM,-n60)
             : desired*n60+targetRem)
@@ -680,8 +658,6 @@ function calc(){
   // Equity accumulation per scenario
   var eR_s2 = fvA(s2_eq, rM, n*12) + fvP(iE, r, n);
   var eR_s3 = fvA(s3_eq, rM, n*12) + fvP(iE, r, n);
-  // eR (= s1 equity accum) already computed above; s1_eq == mEq
-
   // Breakdown — equity shown per scenario since it's scenario-dependent
   var fvI_g = fvP(iP, r, n), fvI_h = fvP(iH, r, n), fvI_e = fvP(iE, r, n);
   var maxTot = gR + hR + eR_s2;  // s2 has largest equity, use for bar scaling
@@ -749,35 +725,23 @@ function calc(){
         gapTo60>0
           ? 'שלב 2 — גישור: נזיל מיד, נמשך לפי התרחיש הנבחר (היתרה ממשיכה לצמוח על מה שנשאר)'
           : '✓ נזיל מיד בגיל הפרישה')
-    +'<div style="padding:8px 10px;border-radius:7px;border:1px solid var(--bdr);background:var(--white)">'
-    +'<div style="font-weight:700;color:#7c3aed;margin-bottom:5px">שוק ההון — 2 תרחישים:</div>'
-    +[['🟠 ריקון מלא',s1_eq,eR-fvI_e,iE,fvI_e,eR],['💜 יעד '+fmtM(targetRem),s3_eq,eR_s3-fvI_e,iE,fvI_e,eR_s3]].map(function(t){
-      return '<div style="margin-bottom:5px;padding:6px 8px;background:var(--bg);border-radius:6px;font-size:11px">'
-        +'<div style="font-weight:700;color:#7c3aed;margin-bottom:3px">'+t[0]+'</div>'
-        +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">הפרשה חודשית</span><span>'+fmtN(t[1])+'/חודש</span></div>'
-        +(t[3]>0
-          ?'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">צבירה מהפרשות</span><span>'+fmtM(t[2])+'</span></div>'
-           +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">צמיחת יתרה קיימת</span><span>'+fmtM(t[5]-t[2])+'</span></div>'
+    +(function(){
+      var sc_eq = s3_eq;
+      var sc_eR = eR_s3;
+      return '<div style="padding:8px 10px;border-radius:7px;border:1px solid var(--pbd);background:var(--plt);font-size:11px">'
+        +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">הפרשה חודשית</span><span style="font-weight:700;color:#7c3aed">'+fmtN(sc_eq)+'/חודש</span></div>'
+        +(iE>0
+          ?'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">צבירה מהפרשות</span><span>'+fmtM(sc_eR-fvI_e)+'</span></div>'
+           +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">צמיחת יתרה קיימת ('+fmtM(iE)+')</span><span>'+fmtM(fvI_e)+'</span></div>'
           :'')
-        +'<div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px dashed var(--bdr);margin-top:3px;padding-top:3px"><span>סה"כ בפרישה</span><span style="color:#7c3aed">'+fmtM(t[5])+'</span></div>'
+        +'<div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px dashed var(--bdr);margin-top:4px;padding-top:4px"><span>סה"כ בפרישה</span><span style="color:#7c3aed">'+fmtM(sc_eR)+'</span></div>'
         +'</div>';
-    }).join('')
-    +'</div>'
+    })()
     +'</div></div>';
   $('bkBody').innerHTML = bkHtml;
 
-  // ─── THREE-SCENARIO CARD ──────────────────────────────────────────────────
-  // Each scenario prescribes different equity savings → different liquid at retirement
-  var liq_s1 = gapTo60===0 ? gR+hR+eR    : hR+eR;
-  var liq_s2 = gapTo60===0 ? gR+hR+eR_s2 : hR+eR_s2;
+  // ─── SCENARIO CARD ───────────────────────────────────────────────────────
   var liq_s3 = gapTo60===0 ? gR+hR+eR_s3 : hR+eR_s3;
-
-  var s1_w   = gapTo60>0 ? pmtDraw(liq_s1,rM,n60) : liq_s1*wd/12;
-  var s1_l60 = 0, s1_g60=gRAt60, s1_t60=gRAt60, s1_sw60=gRAt60*wd/12;
-
-  var s2_w     = liq_s2*wd/12;
-  var s2_fvLiq = gapTo60>0 ? Math.max(0, fvP(liq_s2,rM,n60) - fvA(s2_w,rM,n60)) : liq_s2;
-  var s2_l60   = s2_fvLiq, s2_g60=gRAt60, s2_t60=s2_fvLiq+gRAt60, s2_sw60=(s2_fvLiq+gRAt60)*wd/12;
 
   var fvLiq_s3 = gapTo60>0 ? fvP(liq_s3,rM,n60) : liq_s3;
   var s3_w     = gapTo60<=0 ? liq_s3*wd/12
@@ -853,29 +817,29 @@ function calc(){
       +'</div>';
   };
 
+  var sc = targetRem===0
+    ? {icon:'🟠',title:'ריקון מלא (0 נזיל בגיל 60)',bg:'var(--alt)',bc:'var(--abd)',hc:'var(--amber)',
+        desc:'הנזיל מגיע לאפס בדיוק בגיל 60. מגיל 60 — גמל בלבד. להשאיר יתרה — הגדר סכום ב"יתרה רצויה".',
+        liq:liq_s3,w:s3_w,l60:s3_l60,g60:s3_g60,t60:s3_t60,sw60:s3_sw60,req:s3_req,eq:s3_eq,ts:s3_ts}
+    : {icon:'💜',title:'יתרה: '+fmtM(targetRem)+' בגיל 60',bg:'var(--plt)',bc:'var(--pbd)',hc:'var(--purple)',
+        desc:'מושכים כך שיישאר '+fmtM(targetRem)+' נזיל בגיל 60.',
+        liq:liq_s3,w:s3_w,l60:s3_l60,g60:s3_g60,t60:s3_t60,sw60:s3_sw60,req:s3_req,eq:s3_eq,ts:s3_ts};
+  $('scenTitle').textContent = sc.icon+' '+sc.title;
   $('scenBody').innerHTML =
     '<div style="margin-bottom:12px;padding:10px 13px;background:var(--ilt);border:1px solid var(--ibd);border-radius:8px;font-size:11px;color:var(--txt2);line-height:1.7">'
     +(gapTo60>0
-      ?'<strong>'+gapTo60+' שנות גישור (גיל '+retAge+' עד 60) — 2 תרחישים</strong><br>'
-       +'גמל נעול: <strong>'+fmtM(locked)+'</strong> (זהה בשני התרחישים). '
-       +'<u>ההבדל: כמה נשאר נזיל בגיל 60</u> — ובהתאם, כמה צריך לחסוך בשוק ההון'
-      :'<strong>פרישה בגיל 60 ומעלה — כל הקופות פתוחות מיד</strong><br>2 תרחישים לפי יעד היתרה בגיל הפנסיה')
+      ?'<strong>'+gapTo60+' שנות גישור (גיל '+retAge+' עד 60)</strong><br>'
+       +'גמל נעול: <strong>'+fmtM(locked)+'</strong>. לשנות תרחיש — ערוך "רוצה שיישאר בגיל הפנסיה"'
+      :'<strong>פרישה בגיל 60 ומעלה — כל הקופות פתוחות מיד</strong>')
     +'</div>'
-    +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
-    +scenPanel({icon:'🟠',title:'ריקון מלא',bg:'var(--alt)',bc:'var(--abd)',hc:'var(--amber)',
-      desc:'מושכים מקסימום מהנזיל. הנזיל מגיע לאפס בדיוק בגיל 60. מגיל 60 — גמל בלבד.',
-      liq:liq_s1,w:s1_w,l60:s1_l60,g60:s1_g60,t60:s1_t60,sw60:s1_sw60,req:s1_req,eq:s1_eq,ts:s1_ts})
-    +scenPanel({icon:'💜',title:'יעד: '+fmtM(targetRem)+' בגיל 60',bg:'var(--plt)',bc:'var(--pbd)',hc:'var(--purple)',
-      desc:'מושכים כך שיישאר בדיוק '+fmtM(targetRem)+' נזיל בגיל 60. שנה "רוצה שיישאר" למעלה.',
-      liq:liq_s3,w:s3_w,l60:s3_l60,g60:s3_g60,t60:s3_t60,sw60:s3_sw60,req:s3_req,eq:s3_eq,ts:s3_ts})
-    +'</div>';
+    +scenPanel(sc);
 
   // Monthly commitment breakdown
   var preLiving   = num('preLiving');
   var netInHand   = (avgSal + extras)*0.55;
   var equityAvail = netInHand - mortMo - preLiving;
-  var feasible1   = equityAvail >= s1_eq;
-  var feasible3   = equityAvail >= s3_eq;
+  var sc_eq = s3_eq;
+  var sc_ts = s3_ts;
   var sh   = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:9px';
 
   function bonusCell(avail, req) {
@@ -903,85 +867,37 @@ function calc(){
     +'<div style="font-size:11px;color:var(--txt3)">ריבית '+num('mortR').toFixed(1)+'% · בסיום: המשכנתא נגמרת בגיל הפרישה</div>'
     +'</div>'
 
-    // ── BLOCK 2: Savings — 2 scenarios ──
+    // ── BLOCK 2: Savings ──
     +'<div style="border:1px solid var(--ibd);border-radius:11px;padding:13px;margin-bottom:11px">'
     +'<div style="'+sh.replace('var(--txt3)','var(--indigo)').replace('var(--bdr)','var(--ibd)')+'">📦 לחיסכון לפרישה</div>'
-    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
-    +'<thead><tr>'
-    +'<th style="text-align:right;padding:4px 4px;border-bottom:2px solid var(--ibd);color:var(--txt3);font-weight:600"> </th>'
-    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--ibd);color:var(--amber)">🟠 ריקון מלא</th>'
-    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--ibd);color:var(--purple)">💜 יעד '+fmtM(targetRem)+'</th>'
-    +'</tr></thead><tbody>'
-    +'<tr style="color:var(--txt2)">'
-    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">גמל / פנסיה <span style="font-size:10px;color:var(--txt3)">(מברוטו)</span></td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mGem)+'</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mGem)+'</td>'
-    +'</tr>'
-    +'<tr style="color:var(--txt2)">'
-    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">קרן השתלמות <span style="font-size:10px;color:var(--txt3)">(מברוטו)</span></td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
-    +'</tr>'
-    +'<tr style="color:#7c3aed;font-weight:700">'
-    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">שוק ההון <span style="font-size:10px;font-weight:400">(מנטו)</span></td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s1_eq)+'</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s3_eq)+'</td>'
-    +'</tr>'
-    +'<tr style="font-weight:900;font-size:13px">'
-    +'<td style="padding:6px 4px;color:var(--txt1)">סה"כ לחיסכון</td>'
-    +'<td style="text-align:center;padding:6px 6px;color:var(--amber)">'+fmtN(s1_ts)+'/חודש</td>'
-    +'<td style="text-align:center;padding:6px 6px;color:var(--purple)">'+fmtN(s3_ts)+'/חודש</td>'
-    +'</tr>'
-    +'</tbody></table>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:var(--txt2)">'
+    +'<span>גמל / פנסיה <span style="font-size:10px;color:var(--txt3)">(מברוטו)</span></span><span style="font-weight:600">'+fmtN(mGem)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:var(--txt2)">'
+    +'<span>קרן השתלמות <span style="font-size:10px;color:var(--txt3)">(מברוטו)</span></span><span style="font-weight:600">'+fmtN(mHish)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:#7c3aed;font-weight:700">'
+    +'<span>שוק ההון <span style="font-size:10px;font-weight:400">(מנטו)</span></span><span>'+fmtN(sc_eq)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;font-weight:900">'
+    +'<span style="color:var(--txt1)">סה"כ לחיסכון</span><span style="color:var(--indigo)">'+fmtN(sc_ts)+'/חודש</span></div>'
     +'</div>'
 
-    // ── BLOCK 3: Feasibility — 2 scenarios ──
+    // ── BLOCK 3: Feasibility ──
     +'<div style="border:1px solid var(--bdr);border-radius:11px;padding:13px">'
     +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px">💳 כמה פנוי לשוק ההון לפי יעד המחיה?</div>'
-    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
-    +'<thead><tr>'
-    +'<th style="text-align:right;padding:4px 4px;border-bottom:2px solid var(--bdr);color:var(--txt3);font-weight:600"> </th>'
-    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--amber)">🟠 ריקון מלא</th>'
-    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--purple)">💜 יעד '+fmtM(targetRem)+'</th>'
-    +'</tr></thead><tbody>'
-    +'<tr style="color:var(--txt2)">'
-    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">נטו ביד (~55%)</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">'+fmtN(netInHand)+'</td>'
-    +'</tr>'
-    +'<tr style="color:var(--red)">'
-    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">− משכנתא</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">−'+fmtN(mortMo)+'</td>'
-    +'</tr>'
-    +'<tr style="color:var(--txt2)">'
-    +'<td style="padding:5px 4px;border-bottom:2px solid var(--bdr)">− מחיה נטו (יעד)</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)" colspan="2">−'+fmtN(preLiving)+'</td>'
-    +'</tr>'
-    +'<tr style="color:#7c3aed;font-weight:700">'
-    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">= שוק ההון פנוי</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">'+(equityAvail<0?'−':'')+fmtN(Math.abs(equityAvail))+'</td>'
-    +'</tr>'
-    +'<tr style="color:#7c3aed;font-size:11px">'
-    +'<td style="padding:5px 4px;border-bottom:2px solid var(--bdr)">נדרש לתרחיש</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">'+fmtN(s1_eq)+'</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">'+fmtN(s3_eq)+'</td>'
-    +'</tr>'
-    +'<tr style="font-weight:700">'
-    +'<td style="padding:6px 4px;color:var(--txt1);vertical-align:middle">בונוס/מניות<br><span style="font-size:10px;font-weight:400;color:var(--txt3)">נטו לסגירת פער</span></td>'
-    +'<td style="padding:2px 6px">'+bonusCell(equityAvail,s1_eq)+'</td>'
-    +'<td style="padding:2px 6px">'+bonusCell(equityAvail,s3_eq)+'</td>'
-    +'</tr>'
-    +'</tbody></table>'
-    +'<div style="font-size:10px;color:var(--txt3);margin-top:8px;border-top:1px solid var(--bdr);padding-top:6px">הפרשות גמל וקרה"ש מגיעות מהברוטו — לא נלקחות מהנטו ביד</div>'
-    +'</div>';
-
-  // Mortgage box
-  var mortPct = desired>0 ? mortMo/desired*100 : 0;
-  var mortSc  = mortPct<20 ? 'sok' : mortPct<33 ? 'swn' : 'sbd';
-  var mortLbl = mortPct<20 ? 'נמוך — טוב' : mortPct<33 ? 'סביר' : 'גבוה — שים לב';
-  $('mortBody').innerHTML = '<div class="mg">'
-    +'<div class="mi"><div class="ml">יתרה</div><div class="mv">'+fmtM(mortB)+'</div></div>'
-    +'<div class="mi"><div class="ml">תשלום חודשי</div><div class="mv" style="color:var(--red)">-'+Math.round(mortMo).toLocaleString('he-IL')+' \u20aa</div></div>'
-    +'<div class="mi"><div class="ml">% מהכנסה רצויה</div><div class="mv"><span class="sta '+mortSc+'">'+mortPct.toFixed(0)+'% · '+mortLbl+'</span></div></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:var(--txt2)">'
+    +'<span>נטו ביד (~55%)</span><span style="font-weight:600">'+fmtN(netInHand)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:var(--red)">'
+    +'<span>− משכנתא</span><span style="font-weight:600">−'+fmtN(mortMo)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:2px solid var(--bdr);font-size:12px;color:var(--txt2)">'
+    +'<span>− מחיה נטו (יעד)</span><span style="font-weight:600">−'+fmtN(preLiving)+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:12px;color:#7c3aed;font-weight:700">'
+    +'<span>= שוק ההון פנוי</span><span>'+(equityAvail<0?'−':'')+fmtN(Math.abs(equityAvail))+'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:2px solid var(--bdr);font-size:12px;color:#7c3aed">'
+    +'<span>נדרש לתרחיש</span><span style="font-weight:700">'+fmtN(sc_eq)+'</span></div>'
+    +'<div style="padding:6px 0">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--txt1);margin-bottom:4px">בונוס/מניות נטו לסגירת פער</div>'
+    +bonusCell(equityAvail, sc_eq)
+    +'</div>'
+    +'<div style="font-size:10px;color:var(--txt3);border-top:1px solid var(--bdr);padding-top:6px;margin-top:4px">הפרשות גמל וקרה"ש מגיעות מהברוטו — לא נלקחות מהנטו ביד</div>'
     +'</div>';
 
   // Trade-off table

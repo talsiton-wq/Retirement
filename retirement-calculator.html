@@ -131,6 +131,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .kpi:hover{transform:translateY(-2px)}
 .kb{background:var(--ilt);border-color:var(--ibd)} .kg{background:var(--glt);border-color:var(--gbd)}
 .ka{background:var(--alt);border-color:var(--abd)} .kp{background:var(--plt);border-color:var(--pbd)}
+.kc{background:#f0fdfa;border-color:#5eead4}
 .kl{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:7px;line-height:1.3}
 .kv{font-size:21px;font-weight:900;line-height:1;margin-bottom:3px}
 .kb .kv{color:var(--indigo)} .kg .kv{color:var(--green)} .ka .kv{color:var(--amber)} .kp .kv{color:var(--purple)}
@@ -352,6 +353,12 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             oninput="$('dWd').textContent=parseFloat(this.value).toFixed(1)+'%';updateRange(this);calc()">
         </div>
 
+        <div class="st"><div class="sd" style="background:var(--indigo)"></div>יעד גישור</div>
+        <div class="fld">
+          <label>כמה תרצה שיישאר בנזיל בגיל הפנסיה <span class="bi">למלא</span></label>
+          <div class="iw"><input type="number" id="targetRem" value="0" oninput="calc()"><span class="iu">₪</span></div>
+        </div>
+
         <div class="st"><div class="sd" style="background:var(--red)"></div>משכנתא</div>
         <div class="g2">
           <div class="fld">
@@ -381,8 +388,9 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
         <div class="kpis">
           <div class="kpi kb"><div class="kl">💙 כסף זמין ביום הפרישה</div><div class="kv" id="k1">—</div><div class="ks" id="k1s">—</div></div>
           <div class="kpi kg"><div class="kl">💚 כמה לחודש לנצח — לא מרוקן</div><div class="kv" id="k2">—</div><div class="ks" id="k2s">—</div></div>
-          <div class="kpi ka"><div class="kl">🟠 כמה לחודש עד גיל 60 — מרוקן</div><div class="kv" id="k3">—</div><div class="ks" id="k3s">—</div></div>
+          <div class="kpi ka"><div class="kl">🟠 כמה לחודש עד גיל 60 — מרוקן לאפס</div><div class="kv" id="k3">—</div><div class="ks" id="k3s">—</div></div>
           <div class="kpi kp"><div class="kl">💜 הון כולל בגיל 60 — גמל נפתח</div><div class="kv" id="k4">—</div><div class="ks" id="k4s">—</div></div>
+          <div class="kpi kc" style="grid-column:1/-1"><div class="kl">🎯 כמה לחודש כדי שיישאר לי יעד בגיל הפנסיה</div><div class="kv" id="k5">—</div><div class="ks" id="k5s">—</div></div>
         </div>
         <div class="goal-wrap">
           <div class="goal-header">
@@ -397,10 +405,10 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
         </div>
         <div style="margin-top:10px;padding:11px 13px;background:#f8fafc;border:1px solid var(--bdr);border-radius:9px;font-size:11px;color:var(--txt2);line-height:2" id="kpiNote">
           <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">מה מציגות 4 התיבות?</div>
-          <div>💙 <strong>כסף זמין ביום הפרישה</strong> — סך קרן ההשתלמות + ההשקעות בשוק ההון שנצברו. <em>הגמל/פנסיה לא כאן — הוא נעול בחוק עד גיל 60.</em></div>
-          <div>💚 <strong>כמה לחודש לנצח</strong> — אם מושכים רק X% בשנה מהכסף הזמין, הכסף <u>לא נגמר לעולם</u>. זה המספר החודשי הבטוח.</div>
-          <div>🟠 <strong>כמה לחודש עד גיל 60</strong> — אם <u>מרוקנים את הכסף הזמין בדיוק עד גיל 60</u> (ולא שקל אחד יותר), זה כמה אפשר למשוך כל חודש. גבוה יותר מהירוק כי מסיימים את הכסף.</div>
-          <div>💜 <strong>הון בגיל 60</strong> — בגיל 60 הגמל נפתח ומצטרף לכסף הנזיל שנשאר. זה הסכום הכולל שממנו חיים מגיל 60 והלאה.</div>
+          <div>💙 <strong>כסף זמין ביום הפרישה</strong> — קרן השתלמות + שוק ההון. <em>הגמל נעול בחוק עד גיל 60 — לא נוגעים בו.</em></div>
+          <div>💚 <strong>כמה לחודש לנצח</strong> — אם מושכים רק X% בשנה, הכסף <u>לא נגמר לעולם</u>. אפשרות שמרנית.</div>
+          <div>🟠 <strong>כמה לחודש עד גיל 60</strong> — מרוקנים את כל הכסף הזמין <u>בדיוק עד גיל 60</u>. בגיל 60 הנזיל נגמר לגמרי. גבוה יותר מהירוק כי מסיימים את הכסף.</div>
+          <div>💜 <strong>הון בגיל 60 — רק הגמל</strong> — אם בחרת את הכתום (ריקון נזיל עד 60), <u>הנזיל נגמר</u>. מה שנשאר הוא רק <strong>הגמל שצמח X שנה בלי שנגעת בו</strong>. מגיל 60 חיים ממנו.</div>
         </div>
       </div>
     </div>
@@ -488,8 +496,9 @@ function calc(){
   var mortRM = mortR/12;
   var iH=num('iH'), iE=num('iE'), iP=num('iP');
 
-  var extras   = num('extras');
-  var totGross = avgSal + extras;
+  var extras    = num('extras');
+  var targetRem = num('targetRem');
+  var totGross  = avgSal + extras;
   var retAge   = age + yWork;
   var gapY     = Math.max(0, penAge - retAge);
   var gapTo60  = Math.max(0, 60 - retAge);   // years of bridge (retirement → age 60)
@@ -573,17 +582,38 @@ function calc(){
   }
 
   // Bridge analysis: can liquid sustain desired income until age 60?
-  var safeMo   = liquid * wd / 12;                                          // SWR from liquid forever
-  var drawTo60 = gapTo60 > 0 ? pmtDraw(liquid, rM, gapTo60*12) : safeMo;  // full drawdown to 60
+  var safeMo   = liquid * wd / 12;                                          // SWR from liquid forever (green)
+  var drawTo60 = gapTo60 > 0 ? pmtDraw(liquid, rM, gapTo60*12) : safeMo;  // full drawdown (orange) — liquid=0 at 60
 
-  // At age 60: liquid remainder (if withdrawing safeMo) + gemel grown untouched
-  var liquidAt60 = gapTo60 > 0
+  // At age 60 — two scenarios:
+  // A) Orange scenario: drew drawTo60/month → liquid hits ZERO at 60, only gemel remains
+  var gRAt60   = fvP(locked, rM, gapTo60*12);   // gemel grown untouched (same in both scenarios)
+  var safeAt60 = gRAt60 * wd / 12;              // SWR from gemel alone at 60
+
+  // B) Green scenario: drew safeMo/month → some liquid remains at 60 (bonus, shown as note)
+  var liquidAt60_green = gapTo60 > 0
     ? Math.max(0, fvP(liquid, rM, gapTo60*12) - fvA(safeMo, rM, gapTo60*12))
     : liquid;
-  var gRAt60  = fvP(locked, rM, gapTo60*12);
-  var totAt60 = liquidAt60 + gRAt60;
-  var safeAt60 = totAt60 * wd / 12;
-  var penBruto = totAt60 / (202 + 4*(67 - penAge));
+  var totAt60_green = liquidAt60_green + gRAt60;
+  var safeAt60_green = totAt60_green * wd / 12;
+
+  // k4 shows orange-scenario (consistent with k3): liquid gone at 60, gemel only
+  var totAt60  = gRAt60;
+  var penBruto = gRAt60 / (202 + 4*(67 - penAge));
+
+  // k5 — withdrawal to hit targetRem at pension age
+  var n60 = gapTo60 * 12;
+  var fvLiqAtPen = fvP(liquid, rM, n60);   // what liquid pool grows to by pension age (no withdrawals)
+  var drawWithTarget;
+  if (gapTo60 <= 0) {
+    drawWithTarget = null;                   // no bridge needed — retired at/after 60
+  } else if (targetRem >= fvLiqAtPen) {
+    drawWithTarget = 0;                      // target ≥ full grown liquid → can't withdraw at all
+  } else {
+    drawWithTarget = rM > 0
+      ? (fvLiqAtPen - targetRem) * rM / (Math.pow(1+rM, n60) - 1)
+      : (liquid - targetRem) / n60;
+  }
 
   // KPIs
   $('k1').textContent = fmtM(liquid);
@@ -591,13 +621,26 @@ function calc(){
     ? 'קרה"ש '+fmtM(hR)+' + שוק ההון '+fmtM(eR)+' · גמל '+fmtM(locked)+' נעול עד 60'
     : 'קרה"ש + שוק ההון + גמל (פרישה אחרי גיל 60, הכל זמין)';
   $('k2').textContent = fmtK(safeMo);
-  $('k2s').textContent = fmtM(liquid)+' × '+(wd*100).toFixed(1)+'% ÷ 12 = '+fmtK(safeMo)+'/חודש לנצח';
+  $('k2s').textContent = fmtM(liquid)+' × '+(wd*100).toFixed(1)+'% ÷ 12 = '+fmtK(safeMo)+'/חודש לנצח'
+    +(gapTo60>0 ? ' · נשאר בגיל 60: '+fmtM(liquidAt60_green) : '');
   $('k3').textContent = fmtK(drawTo60);
   $('k3s').textContent = gapTo60 > 0
-    ? 'מרוקן '+fmtM(liquid)+' בדיוק על '+gapTo60+' שנים (עד גיל 60)'
+    ? 'מרוקן '+fmtM(liquid)+' בדיוק על '+gapTo60+' שנים · נשאר בגיל 60: 0 ₪'
     : 'כל הקופות פתוחות — אין צורך בגישור';
-  $('k4').textContent = fmtM(totAt60);
-  $('k4s').textContent = 'נזיל שנשאר '+fmtM(liquidAt60)+' + גמל שצמח '+fmtM(gRAt60)+' · משיכה לנצח: '+fmtK(safeAt60)+'/חודש';
+  $('k4').textContent = fmtM(gRAt60);
+  $('k4s').textContent = gapTo60 > 0
+    ? 'הנזיל נגמר · גמל שצמח '+gapTo60+' שנה ללא משיכות · SWR ממנו: '+fmtK(safeAt60)+'/חודש'
+    : 'כל ההון זמין — SWR: '+fmtK(safeAt60)+'/חודש';
+  if (drawWithTarget === null) {
+    $('k5').textContent = '—';
+    $('k5s').textContent = 'אין גישור — פרישה לאחר גיל 60, הכל פתוח';
+  } else if (drawWithTarget === 0) {
+    $('k5').textContent = '0 ₪';
+    $('k5s').textContent = 'היעד ('+fmtM(targetRem)+') גדול מהנזיל שיצטבר ('+fmtM(fvLiqAtPen)+') — לא ניתן למשוך';
+  } else {
+    $('k5').textContent = fmtK(drawWithTarget);
+    $('k5s').textContent = 'נזיל ביום הפרישה '+fmtM(liquid)+' → ימשך '+gapTo60+' שנה → בגיל הפנסיה ייוותרו '+fmtM(targetRem);
+  }
 
   // Goal meter — key question: does drawTo60 cover desired income?
   var ratio = drawTo60 / Math.max(1, desired);
@@ -669,12 +712,34 @@ function calc(){
     +fmtM(liquid)+'<br><span style="font-size:10px;color:var(--txt3)">'+(gapTo60>0?'נזיל · '+fmtM(locked)+' נעול':'הכל נזיל')+'</span>'
     +'</div>'
     +'</div>'
-    +'<div style="margin-top:12px;padding:11px 13px;background:var(--bg);border-radius:9px;font-size:11px;color:var(--txt2);line-height:1.9">'
-    +'<strong style="color:var(--txt2)">איך מחושבת הצבירה לכל קופה?</strong><br>'
-    +'<span style="color:var(--txt3)">כל ₪ שמכניסים כל חודש צומח בריבית דה ריבית. אחרי '+n+' שנות עבודה בתשואה '+(r*100).toFixed(1)+'% ריאלי:</span><br>'
-    +'גמל: '+fmtN(mGem)+'/חודש × '+n+' שנה = <strong style="color:#4f46e5">'+fmtM(gR)+'</strong><br>'
-    +'קרה"ש: '+fmtN(mHish)+'/חודש × '+n+' שנה = <strong style="color:#d97706">'+fmtM(hR)+'</strong><br>'
-    +'שוק ההון: '+fmtN(mEq)+'/חודש × '+n+' שנה = <strong style="color:#7c3aed">'+fmtM(eR)+'</strong><br>'
+    +(function(){
+      // Break each fund into contributions-FV + initial-balance-FV
+      var fvC_g = gR - fvP(iP, r, n);   // contributions portion: gemel
+      var fvI_g = fvP(iP, r, n);         // initial balance portion: gemel
+      var fvC_h = hR - fvP(iH, r, n);
+      var fvI_h = fvP(iH, r, n);
+      var fvC_e = eR - fvP(iE, r, n);
+      var fvI_e = fvP(iE, r, n);
+      function row(label, col, mo, n_, fvC, iAmt, fvI, total){
+        var iRow = iAmt > 0
+          ? '<div style="margin-right:12px;color:var(--txt3)">+ יתרה קיימת '+fmtM(iAmt)+' שצמחה ל-<strong style="color:'+col+'">'+fmtM(fvI)+'</strong></div>'
+          : '<div style="margin-right:12px;color:var(--txt3);font-size:10px">אין יתרה קיימת</div>';
+        return '<div style="margin-bottom:8px;padding:8px 10px;border-radius:7px;border:1px solid var(--bdr);background:var(--white)">'
+          +'<div style="font-weight:700;color:'+col+';margin-bottom:3px">'+label+'</div>'
+          +'<div style="color:var(--txt2)">הפרשות: '+fmtN(mo)+'/חודש × '+n_+' שנה → <strong style="color:'+col+'">'+fmtM(fvC)+'</strong></div>'
+          +iRow
+          +'<div style="margin-top:4px;padding-top:4px;border-top:1px dashed var(--bdr);font-weight:700;color:'+col+'">סה"כ בפרישה = '+fmtM(total)+'</div>'
+          +'</div>';
+      }
+      return '<div style="margin-top:12px;padding:11px 13px;background:var(--bg);border-radius:9px;font-size:11px;color:var(--txt2);line-height:1.7">'
+        +'<strong>איך מחושבת הצבירה לכל קופה?</strong><br>'
+        +'<span style="color:var(--txt3)">הפרשות חודשיות + יתרה קיימת — שניהם צומחים בריבית דה ריבית '+(r*100).toFixed(1)+'% ריאלי, '+n+' שנים:</span>'
+        +'<div style="margin-top:8px">'
+        +row('גמל / פנסיה', '#4f46e5', mGem, n, fvC_g, iP, fvI_g, gR)
+        +row('קרן השתלמות', '#d97706', mHish, n, fvC_h, iH, fvI_h, hR)
+        +row('שוק ההון',    '#7c3aed', mEq,  n, fvC_e, iE, fvI_e, eR)
+        +'</div>';
+    })()
     +'<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--bdr)">'
     +'<strong>איך חושב כמה להשקיע בשוק ההון?</strong><br>'
     +(gapTo60>0
@@ -690,7 +755,7 @@ function calc(){
   $('bkBody').innerHTML = bkHtml;
 
   // Monthly commitment breakdown
-  var netInHand   = avgSal*0.55 + extras;
+  var netInHand   = (avgSal + extras)*0.55;   // extras are also taxed
   // from net: only mortgage + equity investment are "voluntary" out-of-pocket
   // pension/keren hishtalmut come from gross before net
   var fromNet     = mortMo + mEq;
@@ -725,7 +790,7 @@ function calc(){
     // ── BLOCK 3: Current cashflow feasibility ──
     +'<div style="background:'+fBg+';border:1.5px solid '+fBd+';border-radius:12px;padding:14px;margin-bottom:11px">'
     +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px">💳 האם זה אפשרי עם המשכורת הנוכחית?</div>'
-    +'<div class="sr"><span class="sl2">נטו ביד (~55% \u00d7 '+fmtN(avgSal)+(extras>0?' + '+fmtN(extras):'')+')</span><span class="sv2">'+fmtN(netInHand)+'</span></div>'
+    +'<div class="sr"><span class="sl2">נטו ביד ~55% \u00d7 ('+(extras>0?fmtN(avgSal)+' + '+fmtN(extras):fmtN(avgSal))+')</span><span class="sv2">'+fmtN(netInHand)+'</span></div>'
     +'<div class="sr"><span class="sl2">− משכנתא חודשית</span><span class="sv2" style="color:var(--red)">−'+fmtN(mortMo)+'</span></div>'
     +'<div class="sr"><span class="sl2">− השקעה עצמאית (שוק ההון)</span><span class="sv2" style="color:var(--purple)">−'+fmtN(mEq)+'</span></div>'
     +'<div class="sr" style="padding-top:9px;margin-top:5px;border-top:2px solid '+fBd+';border-bottom:none">'
@@ -761,16 +826,26 @@ function calc(){
         +(b60Ok ? '✓ הגישור אפשרי — '+b60Pct+'% מהיעד' : '✗ חסר עד גיל 60 — '+b60Pct+'% מהיעד ('+fmtK(desired-drawTo60)+' פחות)')
         +'</div>'
         +'</div>'
-        // --- At 60 block ---
-        +'<div style="background:var(--bg);border:1px solid var(--bdr);border-radius:9px;padding:11px">'
-        +'<div style="font-size:11px;color:var(--txt2);margin-bottom:7px;font-weight:700">בגיל 60 — גמל נפתח</div>'
-        +'<div class="sr"><span class="sl2">הון כולל (נזיל + גמל שצמח)</span><span class="sv2">'+fmtM(totAt60)+'</span></div>'
-        +'<div class="sr"><span class="sl2">SWR לנצח מגיל 60</span><span class="sv2" style="font-size:16px;font-weight:900;color:'+pc+'">'+fmtK(safeAt60)+'</span></div>'
-        +'<div class="sr"><span class="sl2">יעד</span><span class="sv2">'+fmtK(desired)+'</span></div>'
+        // --- At 60 block (orange scenario: liquid=0, gemel only) ---
+        +'<div style="background:var(--plt);border:1px solid var(--pbd);border-radius:9px;padding:11px">'
+        +'<div style="font-size:11px;color:var(--txt2);margin-bottom:5px;font-weight:700">💜 בגיל 60 — אם בחרת בכתום (ריקון נזיל)</div>'
+        +'<div style="font-size:10px;color:var(--txt3);margin-bottom:8px">הנזיל <strong>נגמר לגמרי</strong> בגיל 60. מה שנשאר הוא הגמל שצמח '+gapTo60+' שנה ללא כל משיכה:</div>'
+        +'<div class="sr"><span class="sl2">גמל בפרישה</span><span class="sv2">'+fmtM(locked)+'</span></div>'
+        +'<div class="sr"><span class="sl2">+ צמיחה של '+gapTo60+' שנה ('+( r*100).toFixed(1)+'% ריאלי)</span><span class="sv2" style="color:var(--green)">+'+fmtM(gRAt60-locked)+'</span></div>'
+        +'<div class="sr" style="border-top:2px solid var(--pbd);padding-top:8px;margin-top:4px"><span class="sl2" style="font-weight:700">= גמל בגיל 60</span><span class="sv2" style="font-size:16px;font-weight:900;color:var(--purple)">'+fmtM(gRAt60)+'</span></div>'
+        +'<div class="sr"><span class="sl2">משיכה לנצח ממנו ('+(wd*100).toFixed(1)+'% בשנה)</span><span class="sv2" style="font-size:15px;font-weight:900;color:'+pc+'">'+fmtK(safeAt60)+'/חודש</span></div>'
+        +'<div class="sr"><span class="sl2">יעד</span><span class="sv2">'+fmtK(desired)+'/חודש</span></div>'
         +'<div style="margin-top:8px;font-size:12px;font-weight:700;color:'+pc+'">'
-        +(p60Ok ? '✓ בגיל 60 מכוסה — SWR: '+p60Pct+'% מהיעד' : '~ '+p60Pct+'% מהיעד בגיל 60 · גמל מוסיף לביטחון')
+        +(p60Ok ? '✓ גמל לבד מספיק — '+p60Pct+'% מהיעד' : '⚠ גמל לבד = '+p60Pct+'% מהיעד · שקול למשוך פחות מהנזיל (הירוק) ולהשאיר חלק לגיל 60')
         +'</div>'
         +'</div>'
+        // --- Bonus: green scenario ---
+        +(gapTo60>0
+          ? '<div style="margin-top:8px;padding:9px 12px;background:#f8fafc;border:1px dashed var(--bdr);border-radius:8px;font-size:11px;color:var(--txt2);line-height:1.7">'
+            +'💡 <strong>אם תמשוך פחות (הירוק '+fmtK(safeMo)+'/חודש):</strong> הנזיל לא נגמר — '
+            +'יישארו '+fmtM(liquidAt60_green)+' נזיל + '+fmtM(gRAt60)+' גמל = <strong>'+fmtM(totAt60_green)+'</strong> · SWR: <strong>'+fmtK(safeAt60_green)+'/חודש</strong>'
+            +'</div>'
+          : '')
         +'</div>';
     })();
 
@@ -810,6 +885,33 @@ function calc(){
   });
   html+='</tbody>';
   $('tbl').innerHTML = html;
+
+  saveState();
+}
+
+// ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
+var STORAGE_KEY = 'ret_calc_v1';
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','hishPct','iP','iH','iE','mortBal','mortR','targetRem'];
+var PERSIST_RANGE = ['retRate','wdRate'];
+
+function saveState(){
+  var s = {hishMode: hishMode};
+  PERSIST_NUM.forEach(function(id){ s[id] = $(id).value; });
+  PERSIST_RANGE.forEach(function(id){ s[id] = $(id).value; });
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }catch(e){}
+}
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    var s = JSON.parse(raw);
+    PERSIST_NUM.forEach(function(id){ if(s[id]!==undefined) $(id).value = s[id]; });
+    PERSIST_RANGE.forEach(function(id){
+      if(s[id]!==undefined){ $(id).value = s[id]; updateRange($(id)); }
+    });
+    if(s.hishMode!==undefined) setHish(s.hishMode);
+  }catch(e){}
 }
 
 // Init slider fills + select-all on focus for number inputs
@@ -819,9 +921,9 @@ document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('input[type=number]').forEach(function(el){
     el.addEventListener('focus', function(){ this.select(); });
   });
+  loadState();
+  calc();
 });
-
-calc();
 </script>
 </body>
 </html>

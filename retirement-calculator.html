@@ -282,6 +282,11 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
           <label>הכנסה רצויה בפרישה (ברוטו) <span class="bi">למלא</span></label>
           <div class="iw"><input type="number" id="desired" value="30000" oninput="calc()"><span class="iu">₪/חודש</span></div>
         </div>
+        <div class="fld">
+          <label>מחיה נטו עד לפרישה <span class="bi">למלא</span></label>
+          <div class="iw"><input type="number" id="preLiving" value="20000" oninput="calc()"><span class="iu">₪/חודש</span></div>
+          <div class="note">כמה צריך לחיות עליו נטו בחודש עד הפרישה — היתרה הולכת לשוק ההון</div>
+        </div>
 
         <div class="st"><div class="sd" style="background:var(--amber)"></div>כמה הולך לחסכונות כל חודש?</div>
         <div class="fld">
@@ -819,18 +824,20 @@ function calc(){
     +'</div>';
 
   // Monthly commitment breakdown
+  var preLiving   = num('preLiving');
   var netInHand   = (avgSal + extras)*0.55;
-  var leftOver1   = netInHand - mortMo - s1_eq;
-  var leftOver3   = netInHand - mortMo - s3_eq;
-  var feasible1   = leftOver1 >= 0;
-  var feasible3   = leftOver3 >= 0;
+  var equityAvail = netInHand - mortMo - preLiving;
+  var feasible1   = equityAvail >= s1_eq;
+  var feasible3   = equityAvail >= s3_eq;
   var sh   = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt3);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:9px';
 
-  function feasCell(lo, feasible) {
-    var col = feasible ? 'var(--green)' : 'var(--red)';
-    return '<div style="text-align:center;padding:6px 4px;font-size:16px;font-weight:900;color:'+col+'">'+(lo<0?'−':'')+fmtN(Math.abs(lo))+'</div>'
+  function gapCell(avail, req) {
+    var gap = avail - req;
+    var ok  = gap >= 0;
+    var col = ok ? 'var(--green)' : 'var(--red)';
+    return '<div style="text-align:center;padding:6px 4px;font-size:16px;font-weight:900;color:'+col+'">'+(gap<0?'−':'')+fmtN(Math.abs(gap))+'</div>'
       +'<div style="font-size:10px;text-align:center;color:'+col+';padding-bottom:4px">'
-      +(feasible?'✓ אפשרי':'✗ גירעון של '+fmtN(Math.abs(lo)))+'</div>';
+      +(ok ? '✓ עודף לשוק ההון' : '✗ חסר '+fmtN(Math.abs(gap))+' לחודש')+'</div>';
   }
 
   $('salBody').innerHTML =
@@ -879,7 +886,7 @@ function calc(){
 
     // ── BLOCK 3: Feasibility — 2 scenarios ──
     +'<div style="border:1px solid var(--bdr);border-radius:11px;padding:13px">'
-    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px">💳 האם זה אפשרי עם המשכורת הנוכחית?</div>'
+    +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px">💳 כמה פנוי לשוק ההון לפי יעד המחיה?</div>'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
     +'<thead><tr>'
     +'<th style="text-align:right;padding:4px 4px;border-bottom:2px solid var(--bdr);color:var(--txt3);font-weight:600"> </th>'
@@ -894,15 +901,23 @@ function calc(){
     +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">− משכנתא</td>'
     +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">−'+fmtN(mortMo)+'</td>'
     +'</tr>'
+    +'<tr style="color:var(--txt2)">'
+    +'<td style="padding:5px 4px;border-bottom:2px solid var(--bdr)">− מחיה נטו (יעד)</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)" colspan="2">−'+fmtN(preLiving)+'</td>'
+    +'</tr>'
     +'<tr style="color:#7c3aed;font-weight:700">'
-    +'<td style="padding:5px 4px;border-bottom:2px solid var(--bdr)">− שוק ההון</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">−'+fmtN(s1_eq)+'</td>'
-    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">−'+fmtN(s3_eq)+'</td>'
+    +'<td style="padding:5px 4px;border-bottom:1px solid var(--bdr)">= שוק ההון פנוי</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)" colspan="2">'+(equityAvail<0?'−':'')+fmtN(Math.abs(equityAvail))+'</td>'
+    +'</tr>'
+    +'<tr style="color:#7c3aed;font-size:11px">'
+    +'<td style="padding:5px 4px;border-bottom:2px solid var(--bdr)">נדרש לתרחיש</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">'+fmtN(s1_eq)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:2px solid var(--bdr)">'+fmtN(s3_eq)+'</td>'
     +'</tr>'
     +'<tr style="font-weight:700">'
-    +'<td style="padding:6px 4px;color:var(--txt1)">=  נשאר למחיה</td>'
-    +'<td style="padding:2px 6px">'+feasCell(leftOver1,feasible1)+'</td>'
-    +'<td style="padding:2px 6px">'+feasCell(leftOver3,feasible3)+'</td>'
+    +'<td style="padding:6px 4px;color:var(--txt1)">פער</td>'
+    +'<td style="padding:2px 6px">'+gapCell(equityAvail,s1_eq)+'</td>'
+    +'<td style="padding:2px 6px">'+gapCell(equityAvail,s3_eq)+'</td>'
     +'</tr>'
     +'</tbody></table>'
     +'<div style="font-size:10px;color:var(--txt3);margin-top:8px;border-top:1px solid var(--bdr);padding-top:6px">הפרשות גמל וקרה"ש מגיעות מהברוטו — לא נלקחות מהנטו ביד</div>'
@@ -950,7 +965,7 @@ function calc(){
 
 // ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
 var STORAGE_KEY = 'ret_calc_v1';
-var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','hishPct','iP','iH','iE','mortBal','mortR','targetRem'];
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','preLiving','hishPct','iP','iH','iE','mortBal','mortR','targetRem'];
 var PERSIST_RANGE = ['retRate','wdRate'];
 
 function saveState(){

@@ -678,12 +678,34 @@ function calc(){
     +fmtM(liquid)+'<br><span style="font-size:10px;color:var(--txt3)">'+(gapTo60>0?'נזיל · '+fmtM(locked)+' נעול':'הכל נזיל')+'</span>'
     +'</div>'
     +'</div>'
-    +'<div style="margin-top:12px;padding:11px 13px;background:var(--bg);border-radius:9px;font-size:11px;color:var(--txt2);line-height:1.9">'
-    +'<strong style="color:var(--txt2)">איך מחושבת הצבירה לכל קופה?</strong><br>'
-    +'<span style="color:var(--txt3)">כל ₪ שמכניסים כל חודש צומח בריבית דה ריבית. אחרי '+n+' שנות עבודה בתשואה '+(r*100).toFixed(1)+'% ריאלי:</span><br>'
-    +'גמל: '+fmtN(mGem)+'/חודש × '+n+' שנה = <strong style="color:#4f46e5">'+fmtM(gR)+'</strong><br>'
-    +'קרה"ש: '+fmtN(mHish)+'/חודש × '+n+' שנה = <strong style="color:#d97706">'+fmtM(hR)+'</strong><br>'
-    +'שוק ההון: '+fmtN(mEq)+'/חודש × '+n+' שנה = <strong style="color:#7c3aed">'+fmtM(eR)+'</strong><br>'
+    +(function(){
+      // Break each fund into contributions-FV + initial-balance-FV
+      var fvC_g = gR - fvP(iP, r, n);   // contributions portion: gemel
+      var fvI_g = fvP(iP, r, n);         // initial balance portion: gemel
+      var fvC_h = hR - fvP(iH, r, n);
+      var fvI_h = fvP(iH, r, n);
+      var fvC_e = eR - fvP(iE, r, n);
+      var fvI_e = fvP(iE, r, n);
+      function row(label, col, mo, n_, fvC, iAmt, fvI, total){
+        var iRow = iAmt > 0
+          ? '<div style="margin-right:12px;color:var(--txt3)">+ יתרה קיימת '+fmtM(iAmt)+' שצמחה ל-<strong style="color:'+col+'">'+fmtM(fvI)+'</strong></div>'
+          : '<div style="margin-right:12px;color:var(--txt3);font-size:10px">אין יתרה קיימת</div>';
+        return '<div style="margin-bottom:8px;padding:8px 10px;border-radius:7px;border:1px solid var(--bdr);background:var(--white)">'
+          +'<div style="font-weight:700;color:'+col+';margin-bottom:3px">'+label+'</div>'
+          +'<div style="color:var(--txt2)">הפרשות: '+fmtN(mo)+'/חודש × '+n_+' שנה → <strong style="color:'+col+'">'+fmtM(fvC)+'</strong></div>'
+          +iRow
+          +'<div style="margin-top:4px;padding-top:4px;border-top:1px dashed var(--bdr);font-weight:700;color:'+col+'">סה"כ בפרישה = '+fmtM(total)+'</div>'
+          +'</div>';
+      }
+      return '<div style="margin-top:12px;padding:11px 13px;background:var(--bg);border-radius:9px;font-size:11px;color:var(--txt2);line-height:1.7">'
+        +'<strong>איך מחושבת הצבירה לכל קופה?</strong><br>'
+        +'<span style="color:var(--txt3)">הפרשות חודשיות + יתרה קיימת — שניהם צומחים בריבית דה ריבית '+(r*100).toFixed(1)+'% ריאלי, '+n+' שנים:</span>'
+        +'<div style="margin-top:8px">'
+        +row('גמל / פנסיה', '#4f46e5', mGem, n, fvC_g, iP, fvI_g, gR)
+        +row('קרן השתלמות', '#d97706', mHish, n, fvC_h, iH, fvI_h, hR)
+        +row('שוק ההון',    '#7c3aed', mEq,  n, fvC_e, iE, fvI_e, eR)
+        +'</div>';
+    })()
     +'<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--bdr)">'
     +'<strong>איך חושב כמה להשקיע בשוק ההון?</strong><br>'
     +(gapTo60>0

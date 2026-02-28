@@ -851,6 +851,33 @@ function calc(){
   });
   html+='</tbody>';
   $('tbl').innerHTML = html;
+
+  saveState();
+}
+
+// ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
+var STORAGE_KEY = 'ret_calc_v1';
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','hishPct','iP','iH','iE','mortBal','mortR'];
+var PERSIST_RANGE = ['retRate','wdRate'];
+
+function saveState(){
+  var s = {hishMode: hishMode};
+  PERSIST_NUM.forEach(function(id){ s[id] = $(id).value; });
+  PERSIST_RANGE.forEach(function(id){ s[id] = $(id).value; });
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }catch(e){}
+}
+
+function loadState(){
+  try{
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    var s = JSON.parse(raw);
+    PERSIST_NUM.forEach(function(id){ if(s[id]!==undefined) $(id).value = s[id]; });
+    PERSIST_RANGE.forEach(function(id){
+      if(s[id]!==undefined){ $(id).value = s[id]; updateRange($(id)); }
+    });
+    if(s.hishMode!==undefined) setHish(s.hishMode);
+  }catch(e){}
 }
 
 // Init slider fills + select-all on focus for number inputs
@@ -860,9 +887,9 @@ document.addEventListener('DOMContentLoaded', function(){
   document.querySelectorAll('input[type=number]').forEach(function(el){
     el.addEventListener('focus', function(){ this.select(); });
   });
+  loadState();
+  calc();
 });
-
-calc();
 </script>
 </body>
 </html>

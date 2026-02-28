@@ -363,19 +363,9 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
         </div>
 
         <div class="st"><div class="sd" style="background:var(--red)"></div>משכנתא</div>
-        <div class="g2">
-          <div class="fld">
-            <label>יתרת משכנתא <span class="bi">למלא</span></label>
-            <div class="iw"><input type="number" id="mortBal" value="900000" oninput="calc()"><span class="iu">₪</span></div>
-          </div>
-          <div class="fld">
-            <label>ריבית ממוצעת <span class="bi">למלא</span></label>
-            <div class="iw"><input type="number" id="mortR" value="4.5" step="0.1" oninput="calc()"><span class="iu">%</span></div>
-          </div>
-        </div>
         <div class="fld">
-          <label>תשלום חודשי <span class="ba">אוטומטי</span></label>
-          <div class="af" id="outMort">—</div>
+          <label>תשלום חודשי ממוצע <span class="bi">למלא</span></label>
+          <div class="iw"><input type="number" id="mortMo" value="5000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           <div class="note">ההנחה: המשכנתא נסגרת בדיוק בגיל הפרישה — לא קיימת לאחר מכן</div>
         </div>
 
@@ -420,11 +410,6 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
 
           <div class="st"><div class="sd" style="background:var(--green)"></div>יעדים כספיים</div>
           <div class="fld">
-            <label>מחיה נטו עד לפרישה <span class="bi">למלא</span></label>
-            <div class="iw"><input type="number" id="preLiving" value="20000" oninput="calc()"><span class="iu">₪/חודש</span></div>
-            <div class="note">היתרה מנטו ביד → שוק ההון</div>
-          </div>
-          <div class="fld">
             <label>הכנסה רצויה בפרישה (ברוטו) <span class="bi">למלא</span></label>
             <div class="iw"><input type="number" id="desired" value="30000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           </div>
@@ -443,15 +428,6 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <input type="range" id="retRate" min="2" max="10" step="0.5" value="5"
               oninput="$('dRet').textContent=parseFloat(this.value).toFixed(1)+'%';updateRange(this);calc()">
           </div>
-          <div class="sl">
-            <div class="slt">
-              <label>שיעור משיכה בטוח (SWR) <span class="bi">בחר</span></label>
-              <span class="sv" id="dWd">3.8%</span>
-            </div>
-            <input type="range" id="wdRate" min="2" max="6" step="0.1" value="3.8"
-              oninput="$('dWd').textContent=parseFloat(this.value).toFixed(1)+'%';updateRange(this);calc()">
-          </div>
-
           <button class="back-btn" onclick="goTo(1)">← עריכת נתונים</button>
         </div>
       </div>
@@ -500,7 +476,7 @@ function goTo(step){
     s1.className='step-item active'; s2.className='step-item'; ln.className='step-line';
   } else {
     s1.className='step-item done'; s2.className='step-item active'; ln.className='step-line done';
-    updateRange($('retRate')); updateRange($('wdRate')); updateRange($('ywork'));
+    updateRange($('retRate')); updateRange($('ywork'));
     showTab(1);
     calc();
     window.scrollTo({top:0,behavior:'smooth'});
@@ -542,10 +518,8 @@ function calc(){
   var desired= num('desired');
   var r      = parseFloat($('retRate').value)/100;
   var rM     = r/12;
-  var wd     = parseFloat($('wdRate').value)/100;
-  var mortB  = num('mortBal');
-  var mortR  = num('mortR')/100;
-  var mortRM = mortR/12;
+  var wd     = 0.038;
+  var mortMo = num('mortMo');
   var iH=num('iH'), iE=num('iE'), iP=num('iP');
 
   var extras    = num('extras');
@@ -588,10 +562,6 @@ function calc(){
   var mEq  = Math.max(0, totalLiquidPMT - mHish);
   var mTot = mGem + mHish + mEq;
 
-  // Mortgage (term = remaining work years, paid off at retirement)
-  var mortYrs = yWork;
-  var mortMo  = (mortB>0 && mortR>0) ? pmtLoan(mortB, mortRM, mortYrs*12) : 0;
-
   // Update auto fields
   $('outTotGross').textContent = fmtN(totGross)+'/חודש';
   $('outRetAge').textContent   = retAge+' שנים';
@@ -599,10 +569,9 @@ function calc(){
   $('outGemmel').textContent   = fmtN(mGem)+'/חודש';
   $('outHish').textContent     = fmtN(mHish)+'/חודש';
   $('outInitTot').textContent  = fmtN(iH+iE+iP);
-  $('outMort').textContent     = mortMo>0 ? '-'+fmtN(mortMo)+'/חודש' : '0 \u20aa';
 
   // Flash auto fields
-  ['outTotGross','outRetAge','outGap','outGemmel','outHish','outInitTot','outMort'].forEach(flash);
+  ['outTotGross','outRetAge','outGap','outGemmel','outHish','outInitTot'].forEach(flash);
 
   // Asset accumulation — contributions stop at retirement (fvA runs n=yWork months only)
   var gR  = fvA(mGem,  rM, n*12) + fvP(iP, r, n);   // LOCKED until age 60
@@ -768,8 +737,8 @@ function calc(){
 
 // ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
 var STORAGE_KEY = 'ret_calc_v1';
-var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','preLiving','hishPct','iP','iH','iE','mortBal','mortR','targetRem'];
-var PERSIST_RANGE = ['retRate','wdRate'];
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','hishPct','iP','iH','iE','mortMo','targetRem'];
+var PERSIST_RANGE = ['retRate'];
 
 function saveState(){
   var s = {hishMode: hishMode};
@@ -794,7 +763,6 @@ function loadState(){
 // Init slider fills + select-all on focus for number inputs
 document.addEventListener('DOMContentLoaded', function(){
   updateRange($('retRate'));
-  updateRange($('wdRate'));
   updateRange($('ywork'));
   document.querySelectorAll('input[type=number]').forEach(function(el){
     el.addEventListener('focus', function(){ this.select(); });

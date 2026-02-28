@@ -305,7 +305,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
           </div>
           <div class="fld">
             <label>השלמה — שוק ההון (ETF / מניות)</label>
-            <div class="note" style="margin-top:4px">תלוי בתרחיש — ראה פירוט בכרטיס "3 תרחישים" מטה</div>
+            <div class="note" style="margin-top:4px">תלוי בתרחיש — ראה פירוט בכרטיס "2 תרחישים" מטה</div>
           </div>
         </div>
 
@@ -381,7 +381,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
     </div>
 
     <div class="card">
-      <div class="ch"><div class="ci ci-p">🗓️</div><div><h2>3 תרחישים — מפרישה לקצבה</h2><p>פירוט נכסים מרגע קבלת הקצבה · כמה לחסוך לכל אסטרטגיה</p></div></div>
+      <div class="ch"><div class="ci ci-p">🗓️</div><div><h2>2 תרחישים — מפרישה לקצבה</h2><p>פירוט נכסים מרגע קבלת הקצבה · כמה לחסוך לכל אסטרטגיה</p></div></div>
       <div class="cb" id="scenBody">—</div>
     </div>
 
@@ -801,9 +801,14 @@ function calc(){
     +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
     +'</tr>'
     +'<tr style="color:#7c3aed;font-weight:700">'
-    +'<td style="padding:5px 6px;border-bottom:1px solid var(--bdr)">שוק ההון</td>'
+    +'<td style="padding:5px 6px;border-bottom:1px solid var(--bdr)">שוק ההון / חודש</td>'
     +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s1_eq)+'</td>'
     +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s3_eq)+'</td>'
+    +'</tr>'
+    +'<tr style="color:#0369a1;font-size:11px">'
+    +'<td style="padding:5px 6px;border-bottom:1px solid var(--bdr)">↳ בונוס/מניות שנתי נטו לכיסוי שוק ההון</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr);font-weight:700">'+fmtN(s1_eq*12)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr);font-weight:700">'+fmtN(s3_eq*12)+'</td>'
     +'</tr>'
     +'<tr style="font-weight:900;font-size:13px">'
     +'<td style="padding:6px 6px;color:var(--txt1)">סה"כ מהמשכורת</td>'

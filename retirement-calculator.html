@@ -721,7 +721,7 @@ function calc(){
   $('bkBody').innerHTML = bkHtml;
 
   // Monthly commitment breakdown
-  var netInHand   = avgSal*0.55 + extras;
+  var netInHand   = (avgSal + extras)*0.55;   // extras are also taxed
   // from net: only mortgage + equity investment are "voluntary" out-of-pocket
   // pension/keren hishtalmut come from gross before net
   var fromNet     = mortMo + mEq;
@@ -756,7 +756,7 @@ function calc(){
     // ── BLOCK 3: Current cashflow feasibility ──
     +'<div style="background:'+fBg+';border:1.5px solid '+fBd+';border-radius:12px;padding:14px;margin-bottom:11px">'
     +'<div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:10px">💳 האם זה אפשרי עם המשכורת הנוכחית?</div>'
-    +'<div class="sr"><span class="sl2">נטו ביד (~55% \u00d7 '+fmtN(avgSal)+(extras>0?' + '+fmtN(extras):'')+')</span><span class="sv2">'+fmtN(netInHand)+'</span></div>'
+    +'<div class="sr"><span class="sl2">נטו ביד ~55% \u00d7 ('+(extras>0?fmtN(avgSal)+' + '+fmtN(extras):fmtN(avgSal))+')</span><span class="sv2">'+fmtN(netInHand)+'</span></div>'
     +'<div class="sr"><span class="sl2">− משכנתא חודשית</span><span class="sv2" style="color:var(--red)">−'+fmtN(mortMo)+'</span></div>'
     +'<div class="sr"><span class="sl2">− השקעה עצמאית (שוק ההון)</span><span class="sv2" style="color:var(--purple)">−'+fmtN(mEq)+'</span></div>'
     +'<div class="sr" style="padding-top:9px;margin-top:5px;border-top:2px solid '+fBd+';border-bottom:none">'

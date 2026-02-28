@@ -636,23 +636,6 @@ function calc(){
     // Fixed rows
     +bkRow('#4f46e5','גמל / פנסיה', gapTo60>0?'🔒 נעול עד 60':'✓ נזיל', mGem, gR)
     +bkRow('#d97706','קרן השתלמות','✓ נזיל', mHish, hR)
-    // Equity — 3 scenario rows
-    +'<div class="bki" style="flex-direction:column;align-items:stretch;background:#f5f3ff;border-radius:9px;padding:9px 10px;margin:4px 0">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7c3aed;margin-bottom:7px">שוק ההון — לפי תרחיש</div>'
-    +'<div style="display:flex;flex-direction:column;gap:5px">'
-    +['🟠 ריקון מלא','💚 SWR','💜 יעד '+fmtM(targetRem)].map(function(lbl,i){
-      var eq=[s1_eq,s2_eq,s3_eq][i], er=[eR,eR_s2,eR_s3][i];
-      var p=maxTot>0?Math.round(er/maxTot*100):0;
-      return '<div style="display:flex;align-items:center;gap:10px;font-size:12px">'
-        +'<div style="width:10px;flex-shrink:0"></div>'
-        +'<div style="flex:1;color:var(--txt2)">'+lbl+'</div>'
-        +'<div style="min-width:100px;color:var(--txt2)">'+Math.round(eq).toLocaleString('he-IL')+' \u20aa</div>'
-        +'<div style="flex:2;height:5px;background:var(--bg);border-radius:3px;overflow:hidden">'
-        +'<div style="height:100%;width:'+p+'%;background:#7c3aed55;outline:1px solid #7c3aed44;border-radius:3px"></div></div>'
-        +'<div style="min-width:90px;font-weight:700;color:#7c3aed">'+fmtM(er)+'</div>'
-        +'</div>';
-    }).join('')
-    +'</div></div>'
     // Totals per scenario
     +'<div style="margin-top:8px;padding:10px 12px;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;font-size:12px">'
     +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">סה"כ נכסים בפרישה — לפי תרחיש</div>'

@@ -395,6 +395,13 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
           <div id="stBadge" class="sta">—</div>
           <span style="font-size:12px;color:var(--txt2)" id="stTxt"></span>
         </div>
+        <div style="margin-top:10px;padding:9px 12px;background:#f8fafc;border:1px solid var(--bdr);border-radius:8px;font-size:10px;color:var(--txt3);line-height:1.7" id="kpiNote">
+          <strong style="color:var(--txt2)">מה מציגים ה-KPIs?</strong><br>
+          <strong style="color:var(--indigo)">נזיל בפרישה</strong> = קרה"ש + הון עצמי שנצברו (גמל נעול עד 60)<br>
+          <strong style="color:var(--green)">SWR לנצח</strong> = נזיל × שיעור משיכה ÷ 12 (ניתן למשוך לנצח)<br>
+          <strong style="color:var(--amber)">גישור עד 60</strong> = PMT שמרוקן את הנזיל בדיוק עד גיל 60<br>
+          <strong style="color:var(--purple)">הון בגיל 60</strong> = נזיל שנותר + גמל שצמח → SWR לנצח מגיל 60
+        </div>
       </div>
     </div>
 
@@ -485,6 +492,7 @@ function calc(){
   var totGross = avgSal + extras;
   var retAge   = age + yWork;
   var gapY     = Math.max(0, penAge - retAge);
+  var gapTo60  = Math.max(0, 60 - retAge);   // years of bridge (retirement → age 60)
 
   // Monthly savings (calculated on avgSal only)
   var mGem = (0.0833+0.06+0.065)*avgSal;
@@ -498,11 +506,23 @@ function calc(){
     $('hishCalcNote').textContent = 'בסיס: '+Math.round(hishBase).toLocaleString('he-IL')+' \u20aa \u00d7 10% = '+Math.round(mHish).toLocaleString('he-IL')+' \u20aa';
   }
 
-  // Target for LIQUID capital only (gemel/pension is locked until 60 — can't help bridge period)
-  var liquidTarget     = desired * 12 / wd;
+  // ── LIQUID TARGET ────────────────────────────────────────────────────────
+  // The liquid pool (keren + equity) only needs to cover the bridge to age 60.
+  // After 60 the gemel unlocks and joins. So we use PV of an annuity of
+  // 'desired' for gapTo60 years — NOT the perpetuity (desired×12/wd).
+  // Formula: PV = desired × (1 − (1+rM)^(−gapTo60×12)) / rM
+  var liquidTarget;
+  if (gapTo60 > 0) {
+    liquidTarget = rM > 0
+      ? desired * (1 - Math.pow(1+rM, -gapTo60*12)) / rM
+      : desired * gapTo60 * 12;
+  } else {
+    // Retired at/after 60 — all funds accessible, target SWR perpetuity
+    liquidTarget = desired * 12 / wd;
+  }
   var existingLiquidFV = (iH + iE) * Math.pow(1+r, n);
   var totalLiquidPMT   = rM > 0
-    ? (liquidTarget - existingLiquidFV) * rM / (Math.pow(1+rM, n*12) - 1)
+    ? Math.max(0, liquidTarget - existingLiquidFV) * rM / (Math.pow(1+rM, n*12) - 1)
     : (liquidTarget - existingLiquidFV) / (n*12);
   var mEq  = Math.max(0, totalLiquidPMT - mHish);
   var mTot = mGem + mHish + mEq;
@@ -519,7 +539,20 @@ function calc(){
   $('outHish').textContent     = fmtN(mHish)+'/חודש';
   $('outEq').textContent       = fmtN(mEq)+'/חודש';
   $('outTotSav').textContent   = fmtN(mTot)+'/חודש';
-  $('outTotSavNote').innerHTML = 'גמל <strong>'+Math.round(mGem).toLocaleString('he-IL')+'</strong> + קרה"ש <strong>'+Math.round(mHish).toLocaleString('he-IL')+'</strong> + שוק ההון <strong>'+Math.round(mEq).toLocaleString('he-IL')+'</strong> ₪';
+  $('outTotSavNote').innerHTML =
+    'גמל <strong>'+Math.round(mGem).toLocaleString('he-IL')+'</strong> + קרה"ש <strong>'+Math.round(mHish).toLocaleString('he-IL')+'</strong> + שוק ההון <strong>'+Math.round(mEq).toLocaleString('he-IL')+'</strong> ₪'
+    +'<div style="margin-top:6px;font-size:10px;color:var(--txt3);line-height:1.6;border-top:1px solid var(--bdr);padding-top:5px">'
+    +'<strong style="color:var(--txt2)">איך חושבה השלמת שוק ההון?</strong><br>'
+    +(gapTo60>0
+      ? '① יעד נזיל = ערך נוכחי של '+fmtK(desired)+'/חודש על פני <strong>'+gapTo60+' שנות גישור</strong> עד גיל 60 = <strong>'+fmtM(liquidTarget)+'</strong><br>'
+        +'② הכסף הקיים (קרה"ש + הון) צומח ב-'+n+' שנות עבודה: <strong>'+fmtM(existingLiquidFV)+'</strong><br>'
+        +'③ חסר: '+fmtM(Math.max(0,liquidTarget-existingLiquidFV))+' · PMT לחיסכון: '+fmtN(Math.max(0,totalLiquidPMT))+'/חודש<br>'
+        +'④ מינוס מה שקרה"ש כבר תורמת: −'+fmtN(mHish)+' ← <strong>השלמה ETF: '+fmtN(mEq)+'</strong>'
+      : '① יעד נזיל (פרישה לאחר 60) = '+fmtK(desired)+' × 12 / SWR '+((wd*100).toFixed(1))+'% = <strong>'+fmtM(liquidTarget)+'</strong><br>'
+        +'② הכסף הקיים צומח: <strong>'+fmtM(existingLiquidFV)+'</strong><br>'
+        +'③ חסר: '+fmtM(Math.max(0,liquidTarget-existingLiquidFV))+' · PMT: '+fmtN(Math.max(0,totalLiquidPMT))+'/חודש<br>'
+        +'④ מינוס קרה"ש: −'+fmtN(mHish)+' ← <strong>השלמה ETF: '+fmtN(mEq)+'</strong>')
+    +'</div>';
   $('outInitTot').textContent  = fmtN(iH+iE+iP);
   $('outMort').textContent     = mortMo>0 ? '-'+fmtN(mortMo)+'/חודש' : '0 \u20aa';
 
@@ -533,7 +566,6 @@ function calc(){
   var tot = gR + hR + eR;                             // total (used in breakdown)
 
   // Split liquid vs locked based on whether retirement is before 60
-  var gapTo60 = Math.max(0, 60 - retAge);
   var liquid, locked;
   if (gapTo60 === 0) {
     liquid = tot; locked = 0;   // retired at/after 60 — all funds accessible
@@ -632,10 +664,18 @@ function calc(){
     +fmtM(liquid)+'<br><span style="font-size:10px;color:var(--txt3)">'+(gapTo60>0?'נזיל · '+fmtM(locked)+' נעול':'הכל נזיל')+'</span>'
     +'</div>'
     +'</div>'
-    +'<div style="margin-top:12px;padding:10px 12px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--txt3);line-height:1.6">'
-    +'<strong style="color:var(--txt2)">איך זה מחושב?</strong><br>'
-    +'לכל קופה: <span style="font-family:monospace">FV(תשואה חודשית, '+n+'שנה × 12, חיסכון חודשי) + יתרה קיימת × (1 + '+( r*100).toFixed(1)+'%)^'+n+'</span><br>'
-    +'תשואה ריאלית שנתית: '+(r*100).toFixed(1)+'% · שנות עבודה שנותרות: '+n
+    +'<div style="margin-top:12px;padding:11px 13px;background:var(--bg);border-radius:8px;font-size:11px;color:var(--txt3);line-height:1.8">'
+    +'<strong style="color:var(--txt2)">איך מחושבת הצבירה?</strong><br>'
+    +'לכל קופה: <span style="font-family:monospace;font-size:10px">FV(r_חודשי, '+n+'×12, חיסכון_חודשי) + יתרה_קיימת × (1+r)^'+n+'</span><br>'
+    +'<strong style="color:var(--txt2)">איך נקבע כמה לחסוך ב-ETF?</strong><br>'
+    +(gapTo60>0
+      ? '① יעד נזיל = PV של '+fmtK(desired)+'/חודש × <strong>'+gapTo60+' שנות גישור</strong> עד גיל 60 = <strong>'+fmtM(liquidTarget)+'</strong><br>'
+        +'   (נזיל צריך לגשר בלבד — לאחר 60 גמל/'+fmtM(locked)+' נפתח ומצטרף)<br>'
+      : '① יעד נזיל = '+fmtK(desired)+' × 12 / '+((wd*100).toFixed(1))+'% SWR = <strong>'+fmtM(liquidTarget)+'</strong> (לנצח)<br>')
+    +'② הכסף הנוכחי (קרה"ש + הון) בפרישה: <strong>'+fmtM(existingLiquidFV)+'</strong><br>'
+    +'③ PMT לחיסכון (FV formula הפוך): <strong>'+fmtN(Math.max(0,totalLiquidPMT))+'/חודש</strong><br>'
+    +'④ קרה"ש כבר תורמת '+fmtN(mHish)+' → <strong>השלמה ETF = '+fmtN(mEq)+'/חודש</strong><br>'
+    +'תשואה ריאלית: '+(r*100).toFixed(1)+'% · שנות עבודה: '+n
     +'</div>';
   $('bkBody').innerHTML = bkHtml;
 

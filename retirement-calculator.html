@@ -641,7 +641,10 @@ function calc(){
     $('k5s').textContent = 'היעד ('+fmtM(targetRem)+') גדול מהנזיל שיצטבר ('+fmtM(fvLiqAtPen)+') — לא ניתן למשוך';
   } else {
     $('k5').textContent = fmtK(drawWithTarget);
-    $('k5s').textContent = 'נזיל ביום הפרישה '+fmtM(liquid)+' → ימשך '+gapTo60+' שנה → בגיל הפנסיה ייוותרו '+fmtM(targetRem);
+    $('k5s').innerHTML =
+      fmtM(liquid)+' נזיל ביום הפרישה'
+      +' &nbsp;→&nbsp; <strong>'+gapTo60+' שנה × '+fmtK(drawWithTarget)+'/חודש</strong>'
+      +' &nbsp;→&nbsp; נשאר בגיל הפנסיה: <strong>'+fmtM(targetRem)+'</strong>';
   }
 
   // Goal meter — key question: does drawTo60 cover desired income?

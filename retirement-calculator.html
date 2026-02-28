@@ -353,12 +353,6 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             oninput="$('dWd').textContent=parseFloat(this.value).toFixed(1)+'%';updateRange(this);calc()">
         </div>
 
-        <div class="st"><div class="sd" style="background:var(--indigo)"></div>יעד גישור</div>
-        <div class="fld">
-          <label>כמה תרצה שיישאר בנזיל בגיל הפנסיה <span class="bi">למלא</span></label>
-          <div class="iw"><input type="number" id="targetRem" value="0" oninput="calc()"><span class="iu">₪</span></div>
-        </div>
-
         <div class="st"><div class="sd" style="background:var(--red)"></div>משכנתא</div>
         <div class="g2">
           <div class="fld">
@@ -390,7 +384,15 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
           <div class="kpi kg"><div class="kl">💚 כמה לחודש לנצח — לא מרוקן</div><div class="kv" id="k2">—</div><div class="ks" id="k2s">—</div></div>
           <div class="kpi ka"><div class="kl">🟠 כמה לחודש עד גיל 60 — מרוקן לאפס</div><div class="kv" id="k3">—</div><div class="ks" id="k3s">—</div></div>
           <div class="kpi kp"><div class="kl">💜 הון כולל בגיל 60 — גמל נפתח</div><div class="kv" id="k4">—</div><div class="ks" id="k4s">—</div></div>
-          <div class="kpi kc" style="grid-column:1/-1"><div class="kl">🎯 כמה לחודש כדי שיישאר לי יעד בגיל הפנסיה</div><div class="kv" id="k5">—</div><div class="ks" id="k5s">—</div></div>
+          <div class="kpi kc" style="grid-column:1/-1">
+            <div class="kl">🎯 כמה לחודש כדי שיישאר לי יעד בגיל הפנסיה</div>
+            <div style="display:flex;align-items:center;gap:8px;margin:8px 0 4px">
+              <span style="font-size:13px;color:var(--txt2)">רוצה שיישאר בגיל הפנסיה:</span>
+              <div class="iw" style="margin:0"><input type="number" id="targetRem" value="0" oninput="calc()" style="width:130px"><span class="iu">₪</span></div>
+            </div>
+            <div class="kv" id="k5">—</div>
+            <div class="ks" id="k5s">—</div>
+          </div>
         </div>
         <div class="goal-wrap">
           <div class="goal-header">

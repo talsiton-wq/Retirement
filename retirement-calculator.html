@@ -606,16 +606,18 @@ function calc(){
       +'<div class="bkt" style="color:'+col+'">'+fmtM(accum)+'</div>'
       +'</div>';
   }
-  function detailRow(label, col, mo, fvC, iAmt, fvI, total){
+  function detailRow(label, col, mo, fvC, iAmt, fvI, total, post){
     var iRow = iAmt > 0
-      ? '<div style="color:var(--txt3)">+ יתרה קיימת '+fmtM(iAmt)+' שצמחה ל-<strong style="color:'+col+'">'+fmtM(fvI)+'</strong></div>'
-      : '<div style="color:var(--txt3);font-size:10px">אין יתרה קיימת</div>';
+      ? '<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">+ יתרה קיימת '+fmtM(iAmt)+' צמחה ל</span><span style="color:'+col+'">'+fmtM(fvI)+'</span></div>'
+      : '';
     return '<div style="margin-bottom:8px;padding:8px 10px;border-radius:7px;border:1px solid var(--bdr);background:var(--white)">'
-      +'<div style="font-weight:700;color:'+col+';margin-bottom:3px">'+label+'</div>'
-      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">הפרשה × '+n+' שנה</span><span style="color:'+col+'">'+fmtN(mo)+'/חודש</span></div>'
-      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">צבירה מהפרשות</span><span style="color:'+col+'">'+fmtM(fvC)+'</span></div>'
+      +'<div style="font-weight:700;color:'+col+';margin-bottom:5px">'+label+'</div>'
+      +'<div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--txt3);margin-bottom:3px">שלב 1 — '+n+' שנות עבודה</div>'
+      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">הפרשה חודשית</span><span style="color:'+col+'">'+fmtN(mo)+'/חודש</span></div>'
+      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">צבירת הפרשות (FV)</span><span style="color:'+col+'">'+fmtM(fvC)+'</span></div>'
       +iRow
-      +'<div style="margin-top:4px;padding-top:4px;border-top:1px dashed var(--bdr);font-weight:700;color:'+col+'">סה"כ בפרישה = '+fmtM(total)+'</div>'
+      +'<div style="display:flex;justify-content:space-between;font-weight:700;border-top:1px dashed var(--bdr);margin-top:4px;padding-top:4px"><span>סה"כ ביום פרישה</span><span style="color:'+col+'">'+fmtM(total)+'</span></div>'
+      +(post?'<div style="margin-top:6px;padding:5px 7px;border-radius:5px;background:'+col+'11;font-size:10px;color:var(--txt3)">'+post+'</div>':'')
       +'</div>';
   }
 
@@ -636,40 +638,19 @@ function calc(){
     // Fixed rows
     +bkRow('#4f46e5','גמל / פנסיה', gapTo60>0?'🔒 נעול עד 60':'✓ נזיל', mGem, gR)
     +bkRow('#d97706','קרן השתלמות','✓ נזיל', mHish, hR)
-    // Equity — 3 scenario rows
-    +'<div class="bki" style="flex-direction:column;align-items:stretch;background:#f5f3ff;border-radius:9px;padding:9px 10px;margin:4px 0">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7c3aed;margin-bottom:7px">שוק ההון — לפי תרחיש</div>'
-    +'<div style="display:flex;flex-direction:column;gap:5px">'
-    +['🟠 ריקון מלא','💚 SWR','💜 יעד '+fmtM(targetRem)].map(function(lbl,i){
-      var eq=[s1_eq,s2_eq,s3_eq][i], er=[eR,eR_s2,eR_s3][i];
-      var p=maxTot>0?Math.round(er/maxTot*100):0;
-      return '<div style="display:flex;align-items:center;gap:10px;font-size:12px">'
-        +'<div style="width:10px;flex-shrink:0"></div>'
-        +'<div style="flex:1;color:var(--txt2)">'+lbl+'</div>'
-        +'<div style="min-width:100px;color:var(--txt2)">'+Math.round(eq).toLocaleString('he-IL')+' \u20aa</div>'
-        +'<div style="flex:2;height:5px;background:var(--bg);border-radius:3px;overflow:hidden">'
-        +'<div style="height:100%;width:'+p+'%;background:#7c3aed55;outline:1px solid #7c3aed44;border-radius:3px"></div></div>'
-        +'<div style="min-width:90px;font-weight:700;color:#7c3aed">'+fmtM(er)+'</div>'
-        +'</div>';
-    }).join('')
-    +'</div></div>'
-    // Totals per scenario
-    +'<div style="margin-top:8px;padding:10px 12px;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;font-size:12px">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">סה"כ נכסים בפרישה — לפי תרחיש</div>'
-    +[['🟠 ריקון מלא',gR+hR+eR,s1_eq,s1_ts],['💚 SWR',gR+hR+eR_s2,s2_eq,s2_ts],['💜 יעד '+fmtM(targetRem),gR+hR+eR_s3,s3_eq,s3_ts]].map(function(t){
-      return '<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bdr)">'
-        +'<span style="color:var(--txt2)">'+t[0]+'</span>'
-        +'<span style="font-weight:700;color:#4f46e5">'+fmtM(t[1])+'</span>'
-        +'</div>';
-    }).join('')
-    +'</div>'
     // Detail per fund
     +'<div style="margin-top:12px;padding:11px 13px;background:var(--bg);border-radius:9px;font-size:11px;color:var(--txt2);line-height:1.7">'
     +'<strong>איך מחושבת הצבירה?</strong> '
     +'<span style="color:var(--txt3)">הפרשות חודשיות + יתרה קיימת · '+( r*100).toFixed(1)+'% ריאלי · '+n+' שנים:</span>'
     +'<div style="margin-top:8px">'
-    +detailRow('גמל / פנסיה','#4f46e5',mGem,gR-fvI_g,iP,fvI_g,gR)
-    +detailRow('קרן השתלמות','#d97706',mHish,hR-fvI_h,iH,fvI_h,hR)
+    +detailRow('גמל / פנסיה','#4f46e5',mGem,gR-fvI_g,iP,fvI_g,gR,
+        gapTo60>0
+          ? 'שלב 2 — גישור '+gapTo60+' שנה: הגמל נעול אך ממשיך לגדול ב-'+(r*100).toFixed(1)+'%/שנה · '+fmtM(gR)+' → '+fmtM(gRAt60)+' בגיל 60'
+          : '✓ נפתח מיד בגיל הפרישה — אין שלב גישור')
+    +detailRow('קרן השתלמות','#d97706',mHish,hR-fvI_h,iH,fvI_h,hR,
+        gapTo60>0
+          ? 'שלב 2 — גישור: נזיל מיד, נמשך לפי התרחיש הנבחר (היתרה ממשיכה לצמוח על מה שנשאר)'
+          : '✓ נזיל מיד בגיל הפרישה')
     +'<div style="padding:8px 10px;border-radius:7px;border:1px solid var(--bdr);background:var(--white)">'
     +'<div style="font-weight:700;color:#7c3aed;margin-bottom:5px">שוק ההון — 3 תרחישים:</div>'
     +[['🟠 ריקון מלא',s1_eq,eR-fvI_e,iE,fvI_e,eR],['💚 SWR',s2_eq,eR_s2-fvI_e,iE,fvI_e,eR_s2],['💜 יעד '+fmtM(targetRem),s3_eq,eR_s3-fvI_e,iE,fvI_e,eR_s3]].map(function(t){
@@ -778,6 +759,16 @@ function calc(){
     +scenPanel({icon:'💜',title:'יעד: '+fmtM(targetRem)+' בגיל 60',bg:'var(--plt)',bc:'var(--pbd)',hc:'var(--purple)',
       desc:'מושכים כך שיישאר בדיוק '+fmtM(targetRem)+' נזיל בגיל 60. שנה "רוצה שיישאר" למעלה.',
       liq:liq_s3,w:s3_w,l60:s3_l60,g60:s3_g60,t60:s3_t60,sw60:s3_sw60,req:s3_req,eq:s3_eq,ts:s3_ts})
+    +'</div>'
+    // Totals summary
+    +'<div style="margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;font-size:12px">'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">סה"כ נכסים ביום הפרישה — לפי תרחיש</div>'
+    +[['🟠 ריקון מלא',gR+hR+eR],['💚 SWR',gR+hR+eR_s2],['💜 יעד '+fmtM(targetRem),gR+hR+eR_s3]].map(function(t){
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bdr)">'
+        +'<span style="color:var(--txt2)">'+t[0]+'</span>'
+        +'<span style="font-weight:700;color:#4f46e5">'+fmtM(t[1])+'</span>'
+        +'</div>';
+    }).join('')
     +'</div>';
 
   // Monthly commitment breakdown

@@ -304,15 +304,9 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <div class="af" id="outHish">—</div>
           </div>
           <div class="fld">
-            <label>השלמה — שוק ההון (ETF / מניות) <span class="ba">אוטומטי</span></label>
-            <div class="af" id="outEq">—</div>
-            <div class="note">מחושב לאחור: כמה צריך להשקיע <strong>מעבר</strong> לגמל ולקרן ההשתלמות כדי להגיע ליעד הפרישה</div>
+            <label>השלמה — שוק ההון (ETF / מניות)</label>
+            <div class="note" style="margin-top:4px">תלוי בתרחיש — ראה פירוט בכרטיס "3 תרחישים" מטה</div>
           </div>
-        </div>
-        <div class="fld">
-          <label>סה״כ חיסכון חודשי נדרש <span class="ba">אוטומטי</span></label>
-          <div class="af" style="font-size:16px" id="outTotSav">—</div>
-          <div class="note" id="outTotSavNote" style="margin-top:6px"></div>
         </div>
 
         <div class="st"><div class="sd" style="background:var(--purple)"></div>נכסים קיימים כיום</div>
@@ -553,26 +547,11 @@ function calc(){
   $('outGap').textContent      = gapY+' שנים';
   $('outGemmel').textContent   = fmtN(mGem)+'/חודש';
   $('outHish').textContent     = fmtN(mHish)+'/חודש';
-  $('outEq').textContent       = fmtN(mEq)+'/חודש';
-  $('outTotSav').textContent   = fmtN(mTot)+'/חודש';
-  $('outTotSavNote').innerHTML =
-    'גמל <strong>'+Math.round(mGem).toLocaleString('he-IL')+'</strong> + קרה"ש <strong>'+Math.round(mHish).toLocaleString('he-IL')+'</strong> + שוק ההון <strong>'+Math.round(mEq).toLocaleString('he-IL')+'</strong> ₪'
-    +'<div style="margin-top:7px;font-size:11px;color:var(--txt2);line-height:1.8;border-top:1px solid var(--bdr);padding-top:6px">'
-    +'<strong>מאיפה מגיע הסכום בשוק ההון?</strong><br>'
-    +(gapTo60>0
-      ? 'שאלה: כמה כסף נזיל צריך כדי לחיות <strong>'+fmtK(desired)+'/חודש × '+gapTo60+' שנים</strong> עד גיל 60?<br>'
-        +'תשובה: <strong>'+fmtM(liquidTarget)+'</strong> (הגמל נעול — לא עוזר בתקופה הזו)<br>'
-      : 'שאלה: כמה כסף צריך לחיות <strong>'+fmtK(desired)+'/חודש לנצח</strong> (פרישה אחרי 60, הכל פתוח)?<br>'
-        +'תשובה: <strong>'+fmtM(liquidTarget)+'</strong><br>')
-    +'יש כבר: קרה"ש + הון קיים יגדלו ל-<strong>'+fmtM(existingLiquidFV)+'</strong><br>'
-    +'חסר: <strong>'+fmtM(Math.max(0,liquidTarget-existingLiquidFV))+'</strong> → צריך לחסוך <strong>'+fmtN(Math.max(0,totalLiquidPMT))+'/חודש</strong><br>'
-    +'קרה"ש כבר מכסה '+fmtN(mHish)+'  →  <strong>נדרש '+fmtN(mEq)+'/חודש בשוק ההון</strong>'
-    +'</div>';
   $('outInitTot').textContent  = fmtN(iH+iE+iP);
   $('outMort').textContent     = mortMo>0 ? '-'+fmtN(mortMo)+'/חודש' : '0 \u20aa';
 
   // Flash auto fields
-  ['outTotGross','outRetAge','outGap','outGemmel','outHish','outEq','outTotSav','outInitTot','outMort'].forEach(flash);
+  ['outTotGross','outRetAge','outGap','outGemmel','outHish','outInitTot','outMort'].forEach(flash);
 
   // Asset accumulation — contributions stop at retirement (fvA runs n=yWork months only)
   var gR  = fvA(mGem,  rM, n*12) + fvP(iP, r, n);   // LOCKED until age 60

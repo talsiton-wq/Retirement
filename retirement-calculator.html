@@ -749,17 +749,60 @@ function calc(){
   var scenPanel = function(o){
     var ok=o.w>=desired, wc=ok?'var(--green)':'var(--red)';
     var swok=o.sw60>=desired, sc=swok?'var(--green)':'var(--amber)';
-    var funded=existingLiquidFV>=o.req;
-    return '<div style="flex:1;min-width:260px;border:2px solid '+o.bc+';border-radius:12px;padding:14px 13px;background:'+o.bg+'">'
+    var capGap = Math.max(0, o.req - hR - fvI_e);
+    return '<div style="border:2px solid '+o.bc+';border-radius:12px;padding:14px 13px;background:'+o.bg+'">'
+      // Title + desc
       +'<div style="font-size:13px;font-weight:900;color:'+o.hc+';margin-bottom:3px">'+o.icon+' '+o.title+'</div>'
-      +'<div style="font-size:11px;color:var(--txt3);margin-bottom:11px;line-height:1.4">'+o.desc+'</div>'
-      // Starting assets
+      +'<div style="font-size:11px;color:var(--txt3);margin-bottom:12px;line-height:1.4">'+o.desc+'</div>'
+
+      // ── 1. כמה נזיל נדרש? ──
+      +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">כמה נזיל נדרש ביום הפרישה?</div>'
+      +'<div style="background:rgba(255,255,255,.7);border-radius:8px;padding:10px 12px;margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">'
+      +'<span style="font-size:12px;font-weight:600;color:var(--txt2)">נזיל נדרש</span>'
+      +'<span style="font-size:20px;font-weight:900;color:'+o.hc+'">'+fmtM(o.req)+'</span></div>'
+      +'<div style="font-size:10px;color:var(--txt3);line-height:1.65;padding:5px 8px;background:rgba(0,0,0,.035);border-radius:6px">'
+      +(gapTo60>0
+        ?'סכום שיספיק ל-<strong>'+gapTo60+' שנות גישור</strong> ('+n60+' חודשים) של <strong>'+fmtK(desired)+'/חודש</strong>.'
+          +' הכסף שנותר ממשיך לצמוח ב-'+(r*100).toFixed(1)+'%/שנה — לכן צריך פחות מ-'+fmtK(desired)+'×'+n60+'.'
+          +(targetRem>0?' כולל '+fmtM(targetRem)+' שיישארו נזילים בגיל 60.':'')
+        :'הון שיוצר '+fmtK(desired)+'/חודש לצמיתות לפי SWR: '+fmtM(o.req)+' × '+(wd*100).toFixed(1)+'% ÷ 12.')
+      +'</div>'
+      +'</div>'
+
+      // ── 2. איך מגיעים אליו? ──
+      +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">איך מגיעים אליו?</div>'
+      +'<div style="background:rgba(255,255,255,.7);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--txt2);line-height:2">'
+      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">קרן השתלמות (כבר צוברת אוטומטית)</span><span style="font-weight:600">'+fmtM(hR)+'</span></div>'
+      +(iE>0?'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">הון קיים בשוק ('+fmtM(iE)+') צומח '+n+' שנים</span><span style="font-weight:600">'+fmtM(fvI_e)+'</span></div>':'')
+      +(capGap>0
+        ?'<div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(0,0,0,.1);padding-top:5px;margin-top:2px"><span style="font-weight:700">חסר — שוק ההון צריך לצבור</span><span style="font-weight:700;color:#7c3aed">'+fmtM(capGap)+'</span></div>'
+        :'<div style="color:var(--green);font-weight:700;border-top:1px dashed rgba(0,0,0,.1);padding-top:5px;margin-top:2px">✓ קרה"ש + הון קיים מספיקים לבד</div>')
+      // Monthly equity — highlighted
+      +(o.eq>0
+        ?'<div style="margin-top:7px;padding:8px 10px;background:rgba(124,58,237,.09);border:1.5px solid rgba(124,58,237,.28);border-radius:8px;display:flex;justify-content:space-between;align-items:baseline">'
+          +'<span style="font-size:12px;font-weight:700;color:#7c3aed">→ להפריש לשוק ההון</span>'
+          +'<span style="font-size:20px;font-weight:900;color:#7c3aed">'+fmtN(o.eq)+'/חודש</span></div>'
+        :'')
+      // Breakdown line
+      +'<div style="margin-top:8px;padding-top:6px;border-top:1.5px solid rgba(0,0,0,.09);font-size:10px;color:var(--txt3);line-height:1.9">'
+      +'גמל <strong style="color:var(--txt2)">'+fmtN(mGem)+'</strong>'
+      +' + קרה"ש <strong style="color:var(--txt2)">'+fmtN(mHish)+'</strong>'
+      +(o.eq>0?' + שוק ההון <strong style="color:#7c3aed">'+fmtN(o.eq)+'</strong>':'')
+      +'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:2px">'
+      +'<span style="font-size:12px;font-weight:700;color:#4f46e5">סה"כ מהמשכורת</span>'
+      +'<span style="font-size:19px;font-weight:900;color:#4f46e5">'+fmtN(o.ts)+'/חודש</span></div>'
+      +'</div>'
+
+      // ── 3. ביום הפרישה ──
       +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">ביום הפרישה (גיל '+retAge+')</div>'
       +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:8px 10px;margin-bottom:9px;font-size:12px;line-height:1.9">'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">נזיל (קרה"ש + שוק)</span><span style="font-weight:700">'+fmtM(o.liq)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">🔒 גמל (נעול עד 60)</span><span style="font-weight:700;color:#dc2626">'+fmtM(locked)+'</span></div>'
       +'</div>'
-      // Bridge
+
+      // ── 4. גישור ──
       +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">גישור — '+gapTo60+' שנה</div>'
       +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:8px 10px;margin-bottom:9px">'
       +'<div style="display:flex;justify-content:space-between;align-items:baseline">'
@@ -768,9 +811,10 @@ function calc(){
       +'</div>'
       +'<div style="font-size:11px;color:var(--txt3);margin-top:2px">יעד: '+fmtK(desired)+' · '+(ok?'✓ מספיק':'✗ חסר '+fmtK(Math.abs(desired-o.w)))+'</div>'
       +'</div>'
-      // At 60
+
+      // ── 5. בגיל 60 ──
       +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">בגיל 60 — קצבה נפתחת</div>'
-      +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:8px 10px;margin-bottom:9px;font-size:12px;line-height:1.9">'
+      +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.9">'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">נזיל שנשאר</span><span style="font-weight:700">'+fmtM(o.l60)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">גמל (נפתח)</span><span style="font-weight:700;color:#7c3aed">'+fmtM(o.g60)+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;border-top:1px solid rgba(0,0,0,.08);padding-top:4px;margin-top:4px">'
@@ -778,44 +822,6 @@ function calc(){
       +'<div style="display:flex;justify-content:space-between;margin-top:2px">'
       +'<span style="color:var(--txt2)">SWR '+(wd*100).toFixed(1)+'%/שנה</span>'
       +'<span style="font-size:13px;font-weight:900;color:'+sc+'">'+fmtK(o.sw60)+'/חודש</span></div>'
-      +'</div>'
-      // Required savings
-      +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px">כמה צריך לחסוך?</div>'
-      +'<div style="background:rgba(255,255,255,.65);border-radius:8px;padding:8px 10px;font-size:11px;color:var(--txt2);line-height:1.9">'
-      +'<div>נזיל נדרש בפרישה: <strong>'+fmtM(o.req)+'</strong></div>'
-      +'<div style="font-size:10px;color:var(--txt3);margin-top:4px;line-height:1.7;padding:5px 7px;background:rgba(0,0,0,.03);border-radius:5px">'
-      +(gapTo60>0
-        ?'<strong>איך חישבנו?</strong> נדרש ביום הפרישה (גיל '+retAge+') כסף שיספיק ל-'+gapTo60+' שנות גישור ('+n60+' חודשים).<br>'
-          +'כל חודש מושכים '+fmtK(desired)+', אבל הכסף שנותר ממשיך לצמוח ב-'+(r*100).toFixed(1)+'%/שנה — כלומר צריך פחות מ-'+fmtK(desired)+' × '+n60+' חודשים.<br>'
-          +'נוסחה: PV של קצבה = '+fmtK(desired)+' × (1−(1+r)<sup>−'+n60+'</sup>) ÷ r'
-          +(targetRem>0?' + '+fmtM(targetRem)+' מהוון לגיל הפרישה (סכום שיישאר בגיל 60)':'')+'.'
-        :'<strong>איך חישבנו?</strong> פרישה בגיל 60+ — כל הקופות פתוחות מיד. נדרש הון לצמיתות לפי SWR: '
-          +fmtM(o.req)+' × '+(wd*100).toFixed(1)+'% ÷ 12 = '+fmtK(desired)+'/חודש לנצח.')
-      +'</div>'
-      // Keren hishtalmut — covers its share automatically
-      +'<div style="border-top:1px dashed rgba(0,0,0,.08);margin:4px 0;padding-top:4px">'
-      +'<div>קרן השתלמות (יתרה '+fmtM(iH)+' + '+fmtN(mHish)+'/חודש → '+n+' שנה): <strong>'+fmtM(hR)+'</strong></div>'
-      +'<div style="color:var(--txt3);font-size:10px;padding-right:6px">↳ מכסה אוטומטית — הפרשת חובה</div>'
-      +'</div>'
-      // What equity must cover
-      +(o.eq===0
-        ?'<div style="color:var(--green);font-weight:700;margin-top:4px">✓ קרה"ש + הון קיים מספיקים — אין צורך בשוק ההון</div>'
-        :'<div style="border-top:1px dashed rgba(0,0,0,.08);margin:4px 0;padding-top:4px">'
-         +'<div>נשאר לשוק ההון: <strong>'+fmtM(o.req-hR)+'</strong></div>'
-         +(iE>0?'<div style="color:var(--txt3);font-size:10px;padding-right:6px">הון קיים '+fmtM(iE)+' → '+fmtM(fvI_e)+' · לצבור עוד: '+fmtM(Math.max(0,o.req-hR-fvI_e))+'</div>':'')
-         +'<div style="color:var(--txt3);font-size:10px;padding-right:6px;font-family:monospace">'
-         +fmtM(Math.max(0,o.req-hR-fvI_e))+' ÷ '+((Math.pow(1+rM,n*12)-1)/rM).toFixed(1)+' = '+fmtN(o.eq)+'/חודש'
-         +'</div>'
-         +'<div style="color:var(--txt3);font-size:9px;padding-right:6px">'
-         +'(נוסחת PMT: FV × r<sub>חודשי</sub> ÷ ((1+r)<sup>'+n*12+'</sup>−1))'
-         +'</div>'
-         +'<div style="margin-top:4px">→ שוק ההון: <strong style="color:#7c3aed;font-size:13px">'+fmtN(o.eq)+'/חודש</strong></div>'
-         +'</div>')
-      // Total line — gemel explained as separate
-      +'<div style="border-top:1px dashed rgba(0,0,0,.1);padding-top:5px;margin-top:4px;font-size:10px;color:var(--txt3)">'
-      +'גמל <strong>'+fmtN(mGem)+'</strong>/חודש נועד לגיל 60 (נעול, לא לגישור)'
-      +'</div>'
-      +'<div style="font-size:13px;font-weight:900;color:#4f46e5;margin-top:2px">סה"כ מהמשכורת: '+fmtN(o.ts)+'/חודש</div>'
       +'</div>'
       +'</div>';
   };

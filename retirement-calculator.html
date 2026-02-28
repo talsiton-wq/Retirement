@@ -660,8 +660,8 @@ function calc(){
           ? 'שלב 2 — גישור: נזיל מיד, נמשך לפי התרחיש הנבחר (היתרה ממשיכה לצמוח על מה שנשאר)'
           : '✓ נזיל מיד בגיל הפרישה')
     +'<div style="padding:8px 10px;border-radius:7px;border:1px solid var(--bdr);background:var(--white)">'
-    +'<div style="font-weight:700;color:#7c3aed;margin-bottom:5px">שוק ההון — 3 תרחישים:</div>'
-    +[['🟠 ריקון מלא',s1_eq,eR-fvI_e,iE,fvI_e,eR],['💚 SWR',s2_eq,eR_s2-fvI_e,iE,fvI_e,eR_s2],['💜 יעד '+fmtM(targetRem),s3_eq,eR_s3-fvI_e,iE,fvI_e,eR_s3]].map(function(t){
+    +'<div style="font-weight:700;color:#7c3aed;margin-bottom:5px">שוק ההון — 2 תרחישים:</div>'
+    +[['🟠 ריקון מלא',s1_eq,eR-fvI_e,iE,fvI_e,eR],['💜 יעד '+fmtM(targetRem),s3_eq,eR_s3-fvI_e,iE,fvI_e,eR_s3]].map(function(t){
       return '<div style="margin-bottom:5px;padding:6px 8px;background:var(--bg);border-radius:6px;font-size:11px">'
         +'<div style="font-weight:700;color:#7c3aed;margin-bottom:3px">'+t[0]+'</div>'
         +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt2)">הפרשה חודשית</span><span>'+fmtN(t[1])+'/חודש</span></div>'
@@ -746,6 +746,12 @@ function calc(){
         :'<div style="border-top:1px dashed rgba(0,0,0,.08);margin:4px 0;padding-top:4px">'
          +'<div>נשאר לשוק ההון: <strong>'+fmtM(o.req-hR)+'</strong></div>'
          +(iE>0?'<div style="color:var(--txt3);font-size:10px;padding-right:6px">הון קיים '+fmtM(iE)+' → '+fmtM(fvI_e)+' · לצבור עוד: '+fmtM(Math.max(0,o.req-hR-fvI_e))+'</div>':'')
+         +'<div style="color:var(--txt3);font-size:10px;padding-right:6px;font-family:monospace">'
+         +fmtM(Math.max(0,o.req-hR-fvI_e))+' ÷ '+((Math.pow(1+rM,n*12)-1)/rM).toFixed(1)+' = '+fmtN(o.eq)+'/חודש'
+         +'</div>'
+         +'<div style="color:var(--txt3);font-size:9px;padding-right:6px">'
+         +'(נוסחת PMT: FV × r<sub>חודשי</sub> ÷ ((1+r)<sup>'+n*12+'</sup>−1))'
+         +'</div>'
          +'<div style="margin-top:4px">→ שוק ההון: <strong style="color:#7c3aed;font-size:13px">'+fmtN(o.eq)+'/חודש</strong></div>'
          +'</div>')
       // Total line — gemel explained as separate
@@ -760,32 +766,51 @@ function calc(){
   $('scenBody').innerHTML =
     '<div style="margin-bottom:12px;padding:10px 13px;background:var(--ilt);border:1px solid var(--ibd);border-radius:8px;font-size:11px;color:var(--txt2);line-height:1.7">'
     +(gapTo60>0
-      ?'<strong>'+gapTo60+' שנות גישור (גיל '+retAge+' עד 60) — 3 אסטרטגיות שונות</strong><br>'
-       +'גמל נעול: <strong>'+fmtM(locked)+'</strong> (זהה בכל תרחיש). '
-       +'הנזיל <u>שונה בכל תרחיש</u> כי כל אסטרטגיה דורשת חיסכון שוני בשוק ההון. '
-       +'ההבדל: אסטרטגיית המשיכה, ולכל אחת — <u>כמה צריך לחסוך כדי להגיע ל-'+fmtK(desired)+'/חודש</u>'
-      :'<strong>פרישה בגיל 60 ומעלה — כל הקופות פתוחות מיד</strong><br>3 אסטרטגיות SWR על סך כל ההון הזמין')
+      ?'<strong>'+gapTo60+' שנות גישור (גיל '+retAge+' עד 60) — 2 תרחישים</strong><br>'
+       +'גמל נעול: <strong>'+fmtM(locked)+'</strong> (זהה בשני התרחישים). '
+       +'<u>ההבדל: כמה נשאר נזיל בגיל 60</u> — ובהתאם, כמה צריך לחסוך בשוק ההון'
+      :'<strong>פרישה בגיל 60 ומעלה — כל הקופות פתוחות מיד</strong><br>2 תרחישים לפי יעד היתרה בגיל הפנסיה')
     +'</div>'
     +'<div style="display:flex;gap:12px;flex-wrap:wrap">'
     +scenPanel({icon:'🟠',title:'ריקון מלא',bg:'var(--alt)',bc:'var(--abd)',hc:'var(--amber)',
       desc:'מושכים מקסימום מהנזיל. הנזיל מגיע לאפס בדיוק בגיל 60. מגיל 60 — גמל בלבד.',
       liq:liq_s1,w:s1_w,l60:s1_l60,g60:s1_g60,t60:s1_t60,sw60:s1_sw60,req:s1_req,eq:s1_eq,ts:s1_ts})
-    +scenPanel({icon:'💚',title:'משיכה בטוחה (SWR)',bg:'var(--glt)',bc:'var(--gbd)',hc:'var(--green)',
-      desc:'מושכים '+(wd*100).toFixed(1)+'%/שנה מהנזיל. הכסף לא נגמר לעולם. בגיל 60 נשאר נזיל.',
-      liq:liq_s2,w:s2_w,l60:s2_l60,g60:s2_g60,t60:s2_t60,sw60:s2_sw60,req:s2_req,eq:s2_eq,ts:s2_ts})
     +scenPanel({icon:'💜',title:'יעד: '+fmtM(targetRem)+' בגיל 60',bg:'var(--plt)',bc:'var(--pbd)',hc:'var(--purple)',
       desc:'מושכים כך שיישאר בדיוק '+fmtM(targetRem)+' נזיל בגיל 60. שנה "רוצה שיישאר" למעלה.',
       liq:liq_s3,w:s3_w,l60:s3_l60,g60:s3_g60,t60:s3_t60,sw60:s3_sw60,req:s3_req,eq:s3_eq,ts:s3_ts})
     +'</div>'
     // Totals summary
-    +'<div style="margin-top:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;font-size:12px">'
-    +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">סה"כ נכסים ביום הפרישה — לפי תרחיש</div>'
-    +[['🟠 ריקון מלא',gR+hR+eR],['💚 SWR',gR+hR+eR_s2],['💜 יעד '+fmtM(targetRem),gR+hR+eR_s3]].map(function(t){
-      return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bdr)">'
-        +'<span style="color:var(--txt2)">'+t[0]+'</span>'
-        +'<span style="font-weight:700;color:#4f46e5">'+fmtM(t[1])+'</span>'
-        +'</div>';
-    }).join('')
+    // ── Monthly savings comparison ──
+    +'<div style="margin-top:12px;padding:12px 14px;background:var(--bg);border:2px solid var(--bdr);border-radius:9px;font-size:12px">'
+    +'<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:9px">כמה צריך לחסוך כל חודש?</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr>'
+    +'<th style="text-align:right;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--txt3);font-weight:600"> </th>'
+    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--amber)">🟠 ריקון מלא</th>'
+    +'<th style="text-align:center;padding:4px 6px;border-bottom:2px solid var(--bdr);color:var(--purple)">💜 יעד '+fmtM(targetRem)+'</th>'
+    +'</tr></thead>'
+    +'<tbody>'
+    +'<tr style="color:var(--txt2)">'
+    +'<td style="padding:5px 6px;border-bottom:1px solid var(--bdr)">גמל (נועד לגיל 60)</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mGem)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mGem)+'</td>'
+    +'</tr>'
+    +'<tr style="color:var(--txt2)">'
+    +'<td style="padding:5px 6px;border-bottom:1px solid var(--bdr)">קרן השתלמות</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(mHish)+'</td>'
+    +'</tr>'
+    +'<tr style="color:#7c3aed;font-weight:700">'
+    +'<td style="padding:5px 6px;border-bottom:1px solid var(--bdr)">שוק ההון</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s1_eq)+'</td>'
+    +'<td style="text-align:center;padding:5px 6px;border-bottom:1px solid var(--bdr)">'+fmtN(s3_eq)+'</td>'
+    +'</tr>'
+    +'<tr style="font-weight:900;font-size:13px">'
+    +'<td style="padding:6px 6px;color:var(--txt1)">סה"כ מהמשכורת</td>'
+    +'<td style="text-align:center;padding:6px 6px;color:var(--amber)">'+fmtN(s1_ts)+'</td>'
+    +'<td style="text-align:center;padding:6px 6px;color:var(--purple)">'+fmtN(s3_ts)+'</td>'
+    +'</tr>'
+    +'</tbody></table>'
     +'</div>';
 
   // Monthly commitment breakdown

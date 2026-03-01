@@ -581,6 +581,24 @@ var fmtN=function(n){return Math.round(Math.abs(n)).toLocaleString('he-IL')+' \u
 function fvA(pmt,r,n){return r===0?pmt*n:pmt*(Math.pow(1+r,n)-1)/r;}
 function fvP(pv,r,n){return pv*Math.pow(1+r,n);}
 function pmtLoan(pv,r,n){return r===0?pv/n:pv*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);}
+
+// חישוב מס הכנסה על קצבת פנסיה — חוק מס הכנסה ישראל
+// פטור קצבה מזכה 35% עד תקרה חודשית, מדרגות 2024, ניכוי נקודות זיכוי
+function calcPensionTax(gross) {
+  var EXEMPT_RATE = 0.35, EXEMPT_CEIL = 8700; // תקרת פטור קצבה מזכה ~2024/2025
+  var exempt  = Math.min(gross * EXEMPT_RATE, EXEMPT_CEIL);
+  var taxable = Math.max(0, gross - exempt);
+  // מדרגות מס חודשיות (שנתי ÷ 12)
+  var br = [[6290,0.10],[9030,0.14],[14490,0.20],[20140,0.31],[41910,0.35],[1e9,0.47]];
+  var tax = 0, prev = 0;
+  for (var i = 0; i < br.length; i++) {
+    if (taxable <= prev) break;
+    tax += (Math.min(taxable, br[i][0]) - prev) * br[i][1];
+    prev = br[i][0];
+  }
+  tax = Math.max(0, tax - 545); // ~2.25 נקודות זיכוי × ≈₪242 (2024)
+  return { tax: Math.round(tax), exempt: Math.round(exempt), taxable: Math.round(taxable), net: Math.round(gross - tax) };
+}
 function pmtDraw(pv,r,n){return r===0?pv/n:pv*r/(1-Math.pow(1+r,-n));}
 
 function calc(){
@@ -830,6 +848,7 @@ function calc(){
   // CARD 3 — פנסיה
   // ════════════════════════════════════════════════
   var pensionMo=gRatPen/annuityFactor;
+  var ptax=calcPensionTax(pensionMo);
   var tc3='';
   tc3+='<div style="background:var(--ilt);border:1.5px solid var(--ibd);border-radius:12px;padding:14px;margin-bottom:12px">'
     +'<div style="font-size:11px;font-weight:700;color:var(--indigo);margin-bottom:6px">🏦 גמל / פנסיה בגיל '+penAge+'</div>'
@@ -849,6 +868,32 @@ function calc(){
     +fmtM(gRatPen)+' ÷ <strong>'+annuityFactor+'</strong> = '+fmtK(pensionMo)+'/חודש<br>'
     +'מקדם '+annuityFactor+' = ממוצע תשלומי קצבה לפי תוחלת חיים'
     +'</div></div>';
+  // ─── תחשיב מס הכנסה על קצבה ───
+  var _effRate = pensionMo > 0 ? (ptax.tax / pensionMo * 100).toFixed(1) : '0.0';
+  var _netPct  = desired > 0 ? Math.round(ptax.net / desired * 100) : 100;
+  var _cmpCol  = ptax.net >= desired ? '#16a34a' : ptax.net >= desired * 0.85 ? '#d97706' : '#dc2626';
+  tc3+='<div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:12px;padding:14px;margin-bottom:12px">'
+    +'<div style="font-size:11px;font-weight:800;color:#16a34a;margin-bottom:9px">💰 מס הכנסה על הקצבה</div>'
+    +'<div style="background:rgba(255,255,255,.75);border-radius:8px;padding:3px 11px;font-size:11px;line-height:2.3">'
+    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">קצבה ברוטו</span><span style="font-weight:700">'+fmtN(pensionMo)+'/ח\'</span></div>'
+    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">פטור קצבה מזכה (35%, תקרה ₪8,700/ח\')</span><span style="color:#16a34a;font-weight:700">−'+fmtN(ptax.exempt)+'/ח\'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;border-top:1px dashed rgba(0,0,0,.1);padding-top:2px;margin-top:2px"><span style="color:var(--txt3)">חייב במס</span><span style="font-weight:700">'+fmtN(ptax.taxable)+'/ח\'</span></div>'
+    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--txt3)">מס (מדרגות + ניכוי נ"ז ~₪545)</span><span style="color:var(--red);font-weight:700">−'+fmtN(ptax.tax)+'/ח\'</span></div>'
+    +'<div style="display:flex;justify-content:space-between;border-top:2px solid rgba(22,163,74,.3);padding-top:5px;margin-top:3px">'
+    +'<span style="font-weight:800;color:#15803d">קצבה נטו</span>'
+    +'<span style="font-weight:900;font-size:16px;color:#15803d">'+fmtN(ptax.net)+'/ח\'</span></div>'
+    +'</div>'
+    +(ptax.tax===0
+      ?'<div style="margin-top:8px;font-size:11px;color:#16a34a;font-weight:700;text-align:center">✓ אפס מס — ברוטו = נטו</div>'
+      :'<div style="margin-top:7px;font-size:10px;color:var(--txt3);text-align:center">שיעור אפקטיבי: <strong style="color:var(--red)">'+_effRate+'%</strong></div>')
+    +'</div>';
+  if(desired>0){
+    tc3+='<div style="border:2px solid '+_cmpCol+';border-radius:11px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.4)">'
+      +'<div><div style="font-size:12px;font-weight:700;color:var(--txt1)">קצבה נטו מול הכנסה רצויה</div>'
+      +'<div style="font-size:11px;color:var(--txt3);margin-top:3px">'+fmtN(ptax.net)+' / '+fmtN(desired)+'</div></div>'
+      +'<div style="text-align:center"><div style="font-size:26px;font-weight:900;color:'+_cmpCol+'">'+_netPct+'%</div>'
+      +'<div style="font-size:9px;color:var(--txt3)">מהיעד</div></div></div>';
+  }
   tc3+='<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">הון הוני ליד הפנסיה</div>';
   if(targetRem>0){
     tc3+='<div style="background:var(--plt);border:1.5px solid var(--pbd);border-radius:12px;padding:14px">'

@@ -372,11 +372,6 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
           <div class="note">גמל, פנסיה וקרן השתלמות מחושבים על שכר זה בלבד</div>
         </div>
         <div class="fld">
-          <label>תוספת (נסיעות, שעות נוספות, בונוס) <span class="bi">למלא</span></label>
-          <div class="iw"><input type="number" id="extras" value="0" oninput="calc()"><span class="iu">₪/חודש</span></div>
-          <div class="note">מוסף לנטו בלבד — אין הפרשות סוציאליות על תוספת זו</div>
-        </div>
-        <div class="fld">
           <label>סה״כ שכר ברוטו חודשי <span class="ba">אוטומטי</span></label>
           <div class="af" id="outTotGross">—</div>
         </div>
@@ -607,9 +602,8 @@ function calc(){
   var mortMo = num('mortMo');
   var iH=num('iH'), iE=num('iE'), iP=num('iP');
 
-  var extras    = num('extras');
   var targetRem = num('targetRem');
-  var totGross  = avgSal + extras;
+  var totGross  = avgSal;
   var retAge   = age + yWork;
   var gapY     = Math.max(0, penAge - retAge);
   
@@ -942,7 +936,7 @@ function calc(){
 
 // ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
 var STORAGE_KEY = 'ret_calc_v1';
-var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','passiveInc','hishPct','iP','iH','iE','mortBal','mortRate','mortMo','targetRem','annuityFactor'];
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','desired','passiveInc','hishPct','iP','iH','iE','mortBal','mortRate','mortMo','targetRem','annuityFactor'];
 var PERSIST_RANGE = ['retRate'];
 
 function saveState(){

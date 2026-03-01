@@ -429,15 +429,15 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <div class="iw"><input type="number" id="desired" value="30000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           </div>
           <div class="fld">
-            <label>יתרה רצויה בגיל 60 <span class="bi">למלא</span></label>
+            <label id="targetRemLabel">יתרה רצויה בגיל פנסיה <span class="bi">למלא</span></label>
             <div class="iw"><input type="number" id="targetRem" value="0" oninput="calc()"><span class="iu">₪</span></div>
-            <div class="note">0 = ריקון מלא (גמל בלבד מגיל 60) · סכום אחר = משיכה נמוכה יותר בגישור</div>
+            <div class="note" id="targetRemNote">0 = ריקון מלא (גמל בלבד מגיל פנסיה) · סכום אחר = משיכה נמוכה יותר בגישור</div>
           </div>
 
           <div class="st"><div class="sd" style="background:var(--cyan)"></div>תשואה ופנסיה</div>
           <div class="sl">
             <div class="slt">
-              <label>תשואה ריאלית שנתית <span class="bi">בחר</span></label>
+              <label>תשואה שנתית (ריאלית — מעל אינפלציה) <span class="bi">בחר</span></label>
               <span class="sv" id="dRet">5.0%</span>
             </div>
             <input type="range" id="retRate" min="2" max="10" step="0.5" value="5"
@@ -573,6 +573,9 @@ function calc(){
   $('outHish').textContent     = fmtN(mHish)+'/חודש';
   $('outInitTot').textContent  = fmtN(iH+iE+iP);
   ['outTotGross','outRetAge','outGap','outGemmel','outHish','outInitTot'].forEach(flash);
+  // Update penAge-dependent labels
+  $('targetRemLabel').innerHTML='יתרה רצויה בגיל '+penAge+' <span class="bi">למלא</span>';
+  $('targetRemNote').textContent='0 = ריקון מלא (גמל בלבד מגיל '+penAge+') · סכום אחר = משיכה נמוכה יותר בגישור';
 
   // Asset accumulation
   var gR  = fvA(mGem,  rM, n*12) + fvP(iP, r, n);   // LOCKED until penAge
@@ -706,7 +709,7 @@ function calc(){
       +'</div>';
   } else {
     tc2+='<div style="font-size:11px;color:var(--txt2);line-height:1.7;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px">'
-      +'פרישה בגיל 60+ — הגמל נפתח מיד. אין גישור. חישוב SWR 4% לצמיתות: '+fmtM(s3_req)+' × 4% ÷ 12 = '+fmtN(desired)+'/חודש.'
+      +'פרישה בגיל '+penAge+'+ — הגמל נפתח מיד. אין גישור. חישוב SWR 4% לצמיתות: '+fmtM(s3_req)+' × 4% ÷ 12 = '+fmtN(desired)+'/חודש.'
       +(mortRem>0?' יתרת משכנתא: '+fmtM(mortRem)+'.':'')
       +'</div>';
   }

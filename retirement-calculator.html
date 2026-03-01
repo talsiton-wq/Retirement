@@ -483,6 +483,11 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <div class="iw"><input type="number" id="desired" value="30000" oninput="calc()"><span class="iu">₪/חודש</span></div>
           </div>
           <div class="fld">
+            <label>הכנסה פסיבית חודשית <span class="bi">למלא</span></label>
+            <div class="iw"><input type="number" id="passiveInc" value="0" oninput="calc()"><span class="iu">₪/חודש</span></div>
+            <div class="note">שכ"ד, דיבידנד ועוד · ריאלי נטו · נצברת בY שנים ומפחיתה משיכה בגישור</div>
+          </div>
+          <div class="fld">
             <label id="targetRemLabel">יתרה רצויה בגיל פנסיה <span class="bi">למלא</span></label>
             <div class="iw"><input type="number" id="targetRem" value="0" oninput="calc()"><span class="iu">₪</span></div>
             <div class="note" id="targetRemNote">0 = ריקון מלא (גמל בלבד מגיל פנסיה) · סכום אחר = משיכה נמוכה יותר בגישור</div>
@@ -590,6 +595,8 @@ function calc(){
   var penAge = num('penAge');
   var avgSal = num('avgSal');
   var desired= num('desired');
+  var passiveInc = num('passiveInc');
+  var netDesired = Math.max(0, desired - passiveInc);
   var r      = parseFloat($('retRate').value)/100;
   var rM     = Math.pow(1+r, 1/12) - 1;  // effective monthly (not nominal r/12)
   var wd     = 0.04; // fixed SWR for edge case (retire at/after 60)
@@ -633,16 +640,16 @@ function calc(){
 
   // Asset accumulation
   var gR  = fvA(mGem,  rM, n*12) + fvP(iP, r, n);   // LOCKED until penAge
-  var hR  = fvA(mHish, rM, n*12) + fvP(iH, r, n);   // liquid from day 1
+  var hR  = fvA(mHish + passiveInc, rM, n*12) + fvP(iH, r, n);   // liquid from day 1
   var fvI_g = fvP(iP, r, n), fvI_h = fvP(iH, r, n), fvI_e = fvP(iE, r, n);
   var nBridge = gapY * 12;
   var gRatPen = fvP(gR, rM, nBridge);  // gemel grows untouched until penAge
 
   // Required liquid at retirement: PV of bridge annuity + PV of targetRem at penAge
   var s3_req = gapY>0
-    ? (rM>0 ? desired*(1-Math.pow(1+rM,-nBridge))/rM + targetRem*Math.pow(1+rM,-nBridge)
-            : desired*nBridge+targetRem)
-    : (desired+targetRem)*12/wd;
+    ? (rM>0 ? netDesired*(1-Math.pow(1+rM,-nBridge))/rM + targetRem*Math.pow(1+rM,-nBridge)
+            : netDesired*nBridge+targetRem)
+    : (netDesired+targetRem)*12/wd;
 
   // Remaining mortgage balance after n years of payments
   var mortRem = 0;
@@ -751,16 +758,19 @@ function calc(){
       +'<div style="font-size:11px;color:var(--txt2);display:flex;justify-content:space-between;margin-bottom:8px">'
       +'<span>מתוכם — סגירת יתרת משכנתא</span><span style="font-weight:600;color:var(--red)">'+fmtM(mortRem)+'</span></div>':'');
   if(gapY>0){
-    var pvAnn=rM>0?desired*(1-Math.pow(1+rM,-nBridge))/rM:desired*nBridge;
+    var pvAnn=rM>0?netDesired*(1-Math.pow(1+rM,-nBridge))/rM:netDesired*nBridge;
     var pvRemVal=targetRem>0?targetRem*Math.pow(1+rM,-nBridge):0;
     var hasExtra=targetRem>0||mortRem>0;
     tc2+='<div style="padding:8px 12px;background:rgba(255,255,255,.65);border-radius:8px">'
       +'<div style="font-weight:700;color:#7c3aed;font-size:12px;margin-bottom:5px">📐 פירוט חישוב הסכום הנדרש</div>'
-      +'<div style="font-size:10px;color:var(--txt3);margin-bottom:8px">גישור: <strong style="color:var(--txt2)">'+gapY+' שנים</strong> ('+nBridge+' ח\') · מגיל '+retAge+' עד '+penAge+' · ריבית חודשית: <strong style="color:var(--txt2)">'+(rM*100).toFixed(3)+'%</strong></div>'
+      +'<div style="font-size:10px;color:var(--txt3);margin-bottom:6px">גישור: <strong style="color:var(--txt2)">'+gapY+' שנים</strong> ('+nBridge+' ח\') · מגיל '+retAge+' עד '+penAge+' · ריבית חודשית: <strong style="color:var(--txt2)">'+(rM*100).toFixed(3)+'%</strong></div>'
+      +(passiveInc>0?'<div style="font-size:10px;background:rgba(16,185,129,.1);border-radius:6px;padding:4px 8px;margin-bottom:6px;display:flex;justify-content:space-between">'
+        +'<span style="color:var(--green)">הכנסה פסיבית מפחיתה משיכה</span>'
+        +'<span style="color:var(--green);font-weight:700">− '+fmtN(passiveInc)+'/ח\'</span></div>':'')
       +'<div style="border:1px solid rgba(124,58,237,.22);border-radius:9px;overflow:hidden;font-size:11px">'
       +'<div style="padding:9px 12px;'+(hasExtra?'border-bottom:1px solid rgba(0,0,0,.07)':'')+'">'
       +'<div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:4px">'+(hasExtra?'① ':'')+'ערך נוכחי — קצבת גישור</div>'
-      +'<div style="color:var(--txt2)">'+fmtN(desired)+'/ח\' × (1 − (1+'+(rM*100).toFixed(3)+'%)<sup>−'+nBridge+'</sup>) ÷ '+(rM*100).toFixed(3)+'%</div>'
+      +'<div style="color:var(--txt2)">'+fmtN(netDesired)+'/ח\' × (1 − (1+'+(rM*100).toFixed(3)+'%)<sup>−'+nBridge+'</sup>) ÷ '+(rM*100).toFixed(3)+'%</div>'
       +'<div style="font-size:13px;font-weight:800;color:#7c3aed;margin-top:4px">= '+fmtM(pvAnn)+'</div>'
       +'</div>'
       +(targetRem>0
@@ -785,7 +795,7 @@ function calc(){
       +'</div>';
   } else {
     tc2+='<div style="font-size:11px;color:var(--txt2);line-height:1.7;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px">'
-      +'פרישה בגיל '+penAge+'+ — הגמל נפתח מיד. אין גישור. חישוב SWR 4% לצמיתות: '+fmtM(s3_req)+' × 4% ÷ 12 = '+fmtN(desired)+'/חודש.'
+      +'פרישה בגיל '+penAge+'+ — הגמל נפתח מיד. אין גישור. חישוב SWR 4% לצמיתות: '+fmtM(s3_req)+' × 4% ÷ 12 = '+fmtN(netDesired)+'/חודש.'
       +(mortRem>0?' יתרת משכנתא: '+fmtM(mortRem)+'.':'')
       +'</div>';
   }
@@ -882,7 +892,7 @@ function calc(){
   for(var dy=-6;dy<=6;dy+=2){
     var yTest=n+dy;
     if(yTest<1) continue;
-    var hR_y=fvA(mHish,rM,yTest*12)+fvP(iH,r,yTest);
+    var hR_y=fvA(mHish+passiveInc,rM,yTest*12)+fvP(iH,r,yTest);
     var fvI_e_y=fvP(iE,r,yTest);
     // Remaining mortgage balance for yTest years
     var mortRem_y=0;
@@ -895,8 +905,8 @@ function calc(){
     var gapY_y=Math.max(0,penAge-(age+yTest));
     var nBridge_y=gapY_y*12;
     var s3_req_y=gapY_y>0
-      ?(rM>0?desired*(1-Math.pow(1+rM,-nBridge_y))/rM+targetRem*Math.pow(1+rM,-nBridge_y):desired*nBridge_y+targetRem)
-      :(desired+targetRem)*12/wd;
+      ?(rM>0?netDesired*(1-Math.pow(1+rM,-nBridge_y))/rM+targetRem*Math.pow(1+rM,-nBridge_y):netDesired*nBridge_y+targetRem)
+      :(netDesired+targetRem)*12/wd;
     var totalNeed_y=s3_req_y+mortRem_y;
     var liqAvail_y=hR_y+fvI_e_y;
     var capGap_y=Math.max(0,totalNeed_y-liqAvail_y);
@@ -932,7 +942,7 @@ function calc(){
 
 // ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
 var STORAGE_KEY = 'ret_calc_v1';
-var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','hishPct','iP','iH','iE','mortBal','mortRate','mortMo','targetRem','annuityFactor'];
+var PERSIST_NUM  = ['age','ywork','penAge','avgSal','extras','desired','passiveInc','hishPct','iP','iH','iE','mortBal','mortRate','mortMo','targetRem','annuityFactor'];
 var PERSIST_RANGE = ['retRate'];
 
 function saveState(){

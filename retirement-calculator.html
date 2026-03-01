@@ -257,9 +257,20 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
 /* ── STEP 1 WRAPPER ── */
 .step1-wrap{max-width:480px;margin:0 auto;padding:16px}
 
+/* ── HERO GRID ── */
+.hg{display:grid;margin-bottom:16px}
+.hg-2{grid-template-columns:1fr 1fr;gap:10px}
+.hg-3{grid-template-columns:1fr 1fr 1fr;gap:8px}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){.pg{grid-template-columns:1fr}}
-@media(max-width:520px){.kpis,.g2,.mg{grid-template-columns:1fr}.hdr{padding:10px 14px}.hdr h1{font-size:16px}.pg{padding:12px 10px}.step1-wrap{padding:12px}.cb{padding:12px}.step-bar{padding:6px 14px}}
+@media(max-width:520px){
+  .kpis,.g2,.mg{grid-template-columns:1fr}
+  .hdr{padding:10px 14px}.hdr h1{font-size:16px}
+  .pg{padding:12px 10px}.step1-wrap{padding:12px}.cb{padding:12px}.step-bar{padding:6px 14px}
+  .hg-3{grid-template-columns:1fr 1fr}
+  .hg-3>div:last-child{grid-column:1/-1}
+}
 </style>
 </head>
 <body>
@@ -520,7 +531,7 @@ function setHish(m){
   calc();
 }
 
-var fmtM=function(n){return(n/1e6).toFixed(2)+'M \u20aa';};
+var fmtM=function(n){return(n/1e6).toFixed(3)+'M \u20aa';};
 var fmtK=function(n){return(n/1000).toFixed(1)+'K \u20aa';};
 var fmtN=function(n){return Math.round(Math.abs(n)).toLocaleString('he-IL')+' \u20aa';};
 
@@ -634,8 +645,8 @@ function calc(){
   var tc1='';
   // Hero summary row
   var heroGrid= mortRem>0
-    ? '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">'
-    : '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">';
+    ? '<div class="hg hg-3">'
+    : '<div class="hg hg-2">';
   tc1+=heroGrid;
   tc1+='<div style="background:var(--glt);border:1.5px solid var(--gbd);border-radius:12px;padding:12px;text-align:center">'
     +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;color:var(--green);margin-bottom:4px">✓ נזיל</div>'

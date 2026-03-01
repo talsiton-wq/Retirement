@@ -252,7 +252,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
 .step-item.active .step-num{background:var(--indigo);color:#fff;border-color:var(--indigo)}
 .step-item.done .step-num{background:var(--green);color:#fff;border-color:var(--green)}
 .step-item.done{color:var(--green)}
-.step-line{flex:1;height:2px;background:var(--bdr);margin:0 10px;min-width:30px;transition:background .3s}
+.step-line{flex:1;height:2px;background:var(--bdr);margin:0 3px;min-width:20px;transition:background .3s}
 .step-line.done{background:var(--green)}
 
 /* ── STEP 1 WRAPPER ── */
@@ -271,6 +271,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
   .pg{padding:12px 10px}.step1-wrap{padding:12px}.cb{padding:12px}.step-bar{padding:6px 14px}
   .hg-3{grid-template-columns:1fr 1fr}
   .hg-3>div:last-child{grid-column:1/-1}
+  .col-xs{display:none}
 }
 </style>
 </head>
@@ -806,14 +807,14 @@ function calc(){
     +'<br><span style="color:var(--txt3);font-size:10px">שורה מסומנת = תרחיש נוכחי שלך</span></div>';
   tc4+='<div class="tw"><table>'
     +'<thead><tr>'
-    +'<th style="text-align:right">y (שנים)</th>'
-    +'<th>גיל פרישה</th>'
-    +'<th>גישור (שנ\')</th>'
-    +'<th>סה"כ נדרש</th>'
-    +(mortBal>0?'<th style="color:var(--red)">יתרת משכנתא</th>':'')
-    +'<th>נזיל קיים</th>'
+    +'<th style="text-align:right">y</th>'
+    +'<th>גיל</th>'
+    +'<th class="col-xs">גישור</th>'
+    +'<th class="col-xs">נדרש</th>'
+    +(mortBal>0?'<th class="col-xs" style="color:var(--red)">משכנתא</th>':'')
+    +'<th>נזיל</th>'
     +'<th>חוסר</th>'
-    +'<th style="color:var(--indigo)">s (₪/חודש)</th>'
+    +'<th style="color:var(--indigo)">s ₪/ח\'</th>'
     +'</tr></thead><tbody>';
   for(var dy=-6;dy<=6;dy+=2){
     var yTest=n+dy;
@@ -842,9 +843,9 @@ function calc(){
     tc4+='<tr'+(isCur?' class="cur"':'')+'>'
       +'<td>'+(isCur?'▶ ':'')+yTest+'</td>'
       +'<td>'+(age+yTest)+'</td>'
-      +'<td>'+gapY_y+'</td>'
-      +'<td>'+fmtM(totalNeed_y)+'</td>'
-      +(mortBal>0?'<td style="color:var(--red);font-weight:600">'+fmtM(mortRem_y)+'</td>':'')
+      +'<td class="col-xs">'+gapY_y+'</td>'
+      +'<td class="col-xs">'+fmtM(totalNeed_y)+'</td>'
+      +(mortBal>0?'<td class="col-xs" style="color:var(--red);font-weight:600">'+fmtM(mortRem_y)+'</td>':'')
       +'<td style="color:var(--green)">'+fmtM(liqAvail_y)+'</td>'
       +'<td style="color:'+(capGap_y>0?'var(--red)':'var(--green)')+'">'+( capGap_y>0?fmtM(capGap_y):'✓' )+'</td>'
       +'<td style="font-weight:700;color:'+(s_y>0?'var(--indigo)':'var(--green)')+'">'+( s_y>0?fmtN(s_y):'—' )+'</td>'

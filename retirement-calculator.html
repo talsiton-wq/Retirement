@@ -537,7 +537,7 @@ function calc(){
   var avgSal = num('avgSal');
   var desired= num('desired');
   var r      = parseFloat($('retRate').value)/100;
-  var rM     = r/12;
+  var rM     = Math.pow(1+r, 1/12) - 1;  // effective monthly (not nominal r/12)
   var wd     = 0.04; // fixed SWR for edge case (retire at/after 60)
   var annuityFactor = num('annuityFactor') || 240;
   var mortBal = num('mortBal');

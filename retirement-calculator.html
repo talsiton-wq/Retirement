@@ -305,6 +305,47 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
 <!-- ═══ STEP 1: Data Entry ═══ -->
 <div id="step1">
   <div class="step1-wrap">
+
+    <!-- Intro card -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="ch ch-g">
+        <div class="ci ci-g">📋</div>
+        <div><h2>על המחשבון</h2><p>מה מחושב, הנחות, ואיך לקרוא תוצאות</p></div>
+      </div>
+      <div class="cb">
+
+        <div class="st"><div class="sd" style="background:var(--indigo)"></div>3 שלבי החישוב</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:2px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--glt);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--green);flex-shrink:0">1</div>
+            <div><div style="font-size:12px;font-weight:700">נקודת פרישה</div><div style="font-size:11px;color:var(--txt2)">מה יש ביום הפרישה: גמל/פנסיה נעול עד גיל פנסיה סוציאלי · קרן השתלמות ושוק ההון נזילים מיד</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--plt);border:2px solid var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--purple);flex-shrink:0">2</div>
+            <div><div style="font-size:12px;font-weight:700">גישור (Bridge)</div><div style="font-size:11px;color:var(--txt2)">ערך נוכחי (PV) של ההכנסה הרצויה מגיל הפרישה המוקדמת עד גיל הפנסיה הסוציאלי — כמה הון נזיל נחוץ ביום הפרישה</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--ilt);border:2px solid var(--indigo);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--indigo);flex-shrink:0">3</div>
+            <div><div style="font-size:12px;font-weight:700">פנסיה והפרשה נדרשת</div><div style="font-size:11px;color:var(--txt2)">קצבה חודשית מהגמל לפי מקדם · חישוב ההפרשה החודשית לשוק ההון הנדרשת לסגירת פער הגישור</div></div>
+          </div>
+        </div>
+
+        <div class="st"><div class="sd" style="background:var(--amber)"></div>הנחות מרכזיות</div>
+        <div style="font-size:11px;color:var(--txt2);background:var(--bg);border-radius:8px;padding:2px 0;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--bdr)"><span>תשואה ריאלית (מעל אינפלציה)</span><strong>2%–10% · ברירת מחדל 5%</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--bdr)"><span>הפרשות גמל/פנסיה חודשיות</span><strong>20.83% מהשכר הסוציאלי</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--bdr)"><span style="white-space:nowrap">פיצויים 8.33% + מעסיק 6% + עובד 6.5%</span><strong style="color:var(--txt3)">= 20.83%</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--bdr)"><span>קרן השתלמות (עד תקרה)</span><strong>1,571 ₪/חודש (מעסיק 7.5% + עובד 2.5%)</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--bdr)"><span>משכנתא — שיטת החישוב</span><strong>שפיצר · ריבית נומינלית חודשית</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--bdr)"><span>מקדם קצבה (ברירת מחדל)</span><strong>240 תשלומים</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:7px 12px"><span>SWR — פרישה לאחר גיל פנסיה</span><strong>4% בשנה</strong></div>
+        </div>
+        <div class="note" style="margin-top:8px">כל הסכומים בערכים ריאליים (מנוכי אינפלציה) · התשואה היא מעל האינפלציה</div>
+
+      </div>
+    </div>
+    <!-- / Intro card -->
+
     <div class="card">
       <div class="ch">
         <div class="ci ci-i">👤</div>
@@ -497,7 +538,7 @@ var hishMode = 1;
 function updateRange(el){
   var min=parseFloat(el.min), max=parseFloat(el.max), val=parseFloat(el.value);
   var pct=(val-min)/(max-min)*100;
-  el.style.background='linear-gradient(to right,var(--indigo) '+pct+'%,var(--bdr) '+pct+'%)';
+  el.style.background='linear-gradient(to left,var(--indigo) '+pct+'%,var(--bdr) '+pct+'%)';
 }
 
 function flash(id){
@@ -710,15 +751,37 @@ function calc(){
       +'<div style="font-size:11px;color:var(--txt2);display:flex;justify-content:space-between;margin-bottom:8px">'
       +'<span>מתוכם — סגירת יתרת משכנתא</span><span style="font-weight:600;color:var(--red)">'+fmtM(mortRem)+'</span></div>':'');
   if(gapY>0){
-    tc2+='<div style="font-size:11px;color:var(--txt2);line-height:1.8;padding:10px 12px;background:rgba(255,255,255,.65);border-radius:8px">'
-      +'<div style="font-weight:700;color:#7c3aed;margin-bottom:5px;font-size:12px">📐 כיצד חישבנו — ערך נוכחי של קצבה:</div>'
-      +'<div>• יש לגשר <strong>'+gapY+' שנים</strong> ('+nBridge+' חודשים) מגיל <strong>'+retAge+'</strong> עד גיל <strong>'+penAge+'</strong> שבו נפתח הגמל.</div>'
-      +'<div>• ההכנסה הרצויה: <strong style="color:#7c3aed">'+fmtN(desired)+'</strong>/חודש. הכסף שנותר ממשיך לצמוח ב-<strong>'+(r*100).toFixed(1)+'%</strong>/שנה, לכן צריך פחות מ-'+fmtN(desired*nBridge)+'.</div>'
-      +'<div style="margin:7px 0 4px;padding:6px 10px;background:rgba(124,58,237,.1);border-radius:6px;font-size:10px;font-family:monospace;color:#4c1d95;overflow-x:auto;word-break:break-all">'
-      +'PV = '+fmtN(desired)+' × (1 − (1+'+(rM*100).toFixed(3)+'%)<sup>−'+nBridge+'</sup>) ÷ '+(rM*100).toFixed(3)+'% = <strong>'+fmtM(rM>0?desired*(1-Math.pow(1+rM,-nBridge))/rM:desired*nBridge)+'</strong>'
-      +(targetRem>0?'<br>+ '+fmtM(targetRem)+' × (1+'+(rM*100).toFixed(3)+'%)<sup>−'+nBridge+'</sup> = <strong>+'+fmtM(targetRem*Math.pow(1+rM,-nBridge))+'</strong>':'')+'</div>'
-      +(targetRem>0?'<div>• + <strong style="color:#7c3aed">'+fmtM(targetRem)+'</strong> שתרצה לשמור הוני בגיל '+penAge+' (ערך נוכחי היום: '+fmtM(targetRem*Math.pow(1+rM,-nBridge))+')</div>':'')
-      +(mortRem>0?'<div>• + יתרת משכנתא שנותרת: <strong style="color:var(--red)">'+fmtM(mortRem)+'</strong> (קרן '+fmtM(mortBal)+' · '+(mRate*100).toFixed(1)+'% · '+fmtN(mortMo)+'/חודש × '+n+' שנים)</div>':'')
+    var pvAnn=rM>0?desired*(1-Math.pow(1+rM,-nBridge))/rM:desired*nBridge;
+    var pvRemVal=targetRem>0?targetRem*Math.pow(1+rM,-nBridge):0;
+    var hasExtra=targetRem>0||mortRem>0;
+    tc2+='<div style="padding:8px 12px;background:rgba(255,255,255,.65);border-radius:8px">'
+      +'<div style="font-weight:700;color:#7c3aed;font-size:12px;margin-bottom:5px">📐 פירוט חישוב הסכום הנדרש</div>'
+      +'<div style="font-size:10px;color:var(--txt3);margin-bottom:8px">גישור: <strong style="color:var(--txt2)">'+gapY+' שנים</strong> ('+nBridge+' ח\') · מגיל '+retAge+' עד '+penAge+' · ריבית חודשית: <strong style="color:var(--txt2)">'+(rM*100).toFixed(3)+'%</strong></div>'
+      +'<div style="border:1px solid rgba(124,58,237,.22);border-radius:9px;overflow:hidden;font-size:11px">'
+      +'<div style="padding:9px 12px;'+(hasExtra?'border-bottom:1px solid rgba(0,0,0,.07)':'')+'">'
+      +'<div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:4px">'+(hasExtra?'① ':'')+'ערך נוכחי — קצבת גישור</div>'
+      +'<div style="color:var(--txt2)">'+fmtN(desired)+'/ח\' × (1 − (1+'+(rM*100).toFixed(3)+'%)<sup>−'+nBridge+'</sup>) ÷ '+(rM*100).toFixed(3)+'%</div>'
+      +'<div style="font-size:13px;font-weight:800;color:#7c3aed;margin-top:4px">= '+fmtM(pvAnn)+'</div>'
+      +'</div>'
+      +(targetRem>0
+        ?'<div style="padding:9px 12px;background:rgba(124,58,237,.04);'+(mortRem>0?'border-bottom:1px solid rgba(0,0,0,.07)':'')+'">'
+        +'<div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:4px">② ערך נוכחי — יתרה הונית בגיל '+penAge+'</div>'
+        +'<div style="color:var(--txt2)">'+fmtM(targetRem)+' × (1+'+(rM*100).toFixed(3)+'%)<sup>−'+nBridge+'</sup></div>'
+        +'<div style="font-size:13px;font-weight:800;color:#7c3aed;margin-top:4px">= +'+fmtM(pvRemVal)+'</div>'
+        +'</div>'
+        :'')
+      +(mortRem>0
+        ?'<div style="padding:9px 12px;background:rgba(220,38,38,.03);border-bottom:1px solid rgba(0,0,0,.07)">'
+        +'<div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:4px">'+(targetRem>0?'③':'②')+' יתרת משכנתא (שפיצר — '+n+' שנים)</div>'
+        +'<div style="color:var(--txt2)">קרן '+fmtM(mortBal)+' · '+(mRate*100).toFixed(1)+'% · '+fmtN(mortMo)+'/ח\'</div>'
+        +'<div style="font-size:13px;font-weight:800;color:var(--red);margin-top:4px">= +'+fmtM(mortRem)+'</div>'
+        +'</div>'
+        :'')
+      +'<div style="padding:9px 12px;background:rgba(124,58,237,.08);display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-weight:700;color:#7c3aed">סה"כ נדרש ביום הפרישה</span>'
+      +'<span style="font-size:15px;font-weight:900;color:#7c3aed">'+fmtM(totalNeed)+'</span>'
+      +'</div>'
+      +'</div>'
       +'</div>';
   } else {
     tc2+='<div style="font-size:11px;color:var(--txt2);line-height:1.7;padding:8px 10px;background:rgba(255,255,255,.5);border-radius:6px">'

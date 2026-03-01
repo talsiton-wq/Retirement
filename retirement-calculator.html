@@ -485,7 +485,7 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
           <div class="fld">
             <label>הכנסה פסיבית חודשית <span class="bi">למלא</span></label>
             <div class="iw"><input type="number" id="passiveInc" value="0" oninput="calc()"><span class="iu">₪/חודש</span></div>
-            <div class="note">שכ"ד, דיבידנד ועוד · ריאלי נטו · נצברת בY שנים ומפחיתה משיכה בגישור</div>
+            <div class="note">שכ"ד, דיבידנד ועוד · ריאלי נטו · מפחיתה את הצורך למשוך מהקרן בגישור</div>
           </div>
           <div class="fld">
             <label id="targetRemLabel">יתרה רצויה בגיל פנסיה <span class="bi">למלא</span></label>
@@ -640,7 +640,7 @@ function calc(){
 
   // Asset accumulation
   var gR  = fvA(mGem,  rM, n*12) + fvP(iP, r, n);   // LOCKED until penAge
-  var hR  = fvA(mHish + passiveInc, rM, n*12) + fvP(iH, r, n);   // liquid from day 1
+  var hR  = fvA(mHish, rM, n*12) + fvP(iH, r, n);   // liquid from day 1
   var fvI_g = fvP(iP, r, n), fvI_h = fvP(iH, r, n), fvI_e = fvP(iE, r, n);
   var nBridge = gapY * 12;
   var gRatPen = fvP(gR, rM, nBridge);  // gemel grows untouched until penAge
@@ -892,7 +892,7 @@ function calc(){
   for(var dy=-6;dy<=6;dy+=2){
     var yTest=n+dy;
     if(yTest<1) continue;
-    var hR_y=fvA(mHish+passiveInc,rM,yTest*12)+fvP(iH,r,yTest);
+    var hR_y=fvA(mHish,rM,yTest*12)+fvP(iH,r,yTest);
     var fvI_e_y=fvP(iE,r,yTest);
     // Remaining mortgage balance for yTest years
     var mortRem_y=0;

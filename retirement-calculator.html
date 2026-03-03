@@ -503,6 +503,17 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
             <div class="note">ברירת מחדל 240 — לפי תוחלת חיים ותקן קרנות פנסיה</div>
           </div>
 
+          <div class="st"><div class="sd" style="background:var(--purple)"></div>מונטה קרלו</div>
+          <div class="sl">
+            <div class="slt">
+              <label>תנודתיות שנתית (σ) <span class="bi">בחר</span></label>
+              <span class="sv" id="dSigma">15%</span>
+            </div>
+            <input type="range" id="mcSigma" min="5" max="30" step="1" value="15"
+              oninput="$('dSigma').textContent=parseInt(this.value)+'%';updateRange(this);calc()">
+          </div>
+          <div class="note">MSCI World ≈ 15% · תיק מאוזן ≈ 10% · שמרני ≈ 7%</div>
+
           <button class="back-btn" onclick="goTo(1)">← עריכת נתונים</button>
         </div>
       </div>
@@ -525,6 +536,10 @@ tbody tr.cur td:first-child{color:var(--indigo);font-weight:700}
       <div class="card">
         <div class="ch ch-a"><div class="ci ci-a">📊</div><div><h2>חישוב הגישור</h2><p>עבור כל y — מה s הנדרש</p></div></div>
         <div class="cb" id="tc4">—</div>
+      </div>
+      <div class="card">
+        <div class="ch ch-p"><div class="ci ci-p">🎲</div><div><h2>מונטה קרלו</h2><p>2,000 סימולציות עם תנודתיות שוק אמיתית</p></div></div>
+        <div class="cb" id="tc5">—</div>
       </div>
     </div>
   </div>
@@ -559,8 +574,9 @@ function goTo(step){
     s1.className='step-item done'; s2.className='step-item active'; ln.className='step-line done';
     window.scrollTo(0,0);
     updateRange($('retRate')); updateRange($('ywork'));
-    $('dRet').textContent  = parseFloat($('retRate').value).toFixed(1)+'%';
+    $('dRet').textContent   = parseFloat($('retRate').value).toFixed(1)+'%';
     $('dYwork').textContent = parseInt($('ywork').value);
+    $('dSigma').textContent = parseInt($('mcSigma').value)+'%';
     calc();
   }
 }
@@ -600,6 +616,129 @@ function calcPensionTax(gross) {
   return { tax: Math.round(tax), exempt: Math.round(exempt), taxable: Math.round(taxable), net: Math.round(gross - tax) };
 }
 function pmtDraw(pv,r,n){return r===0?pv/n:pv*r/(1-Math.pow(1+r,-n));}
+
+// ── מונטה קרלו ────────────────────────────────────────────────────────────
+function randn(){
+  var u=1-Math.random(),v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function quantile(arr,p){
+  var a=arr.slice().sort(function(a,b){return a-b;});
+  var i=(a.length-1)*p/100,lo=Math.floor(i),hi=Math.ceil(i);
+  return a[lo]+(a[hi]-a[lo])*(i-lo);
+}
+function runMC(liqStart,draw,nYears,r,sigma,nSim){
+  var sigM=sigma/Math.sqrt(12);
+  var muM=(Math.log(1+r)-sigma*sigma/2)/12;
+  var success=0;
+  var yv=[];
+  for(var y=0;y<=nYears;y++) yv.push([]);
+  for(var s=0;s<nSim;s++){
+    var port=liqStart,fail=false;
+    yv[0].push(port);
+    for(var y=0;y<nYears;y++){
+      for(var m=0;m<12;m++){
+        port=port*Math.exp(muM+sigM*randn())-draw;
+        if(port<0){port=0;fail=true;}
+      }
+      yv[y+1].push(port);
+    }
+    if(!fail) success++;
+  }
+  return {prob:success/nSim,yv:yv,nY:nYears};
+}
+function renderFanChart(yv,nY){
+  var W=480,H=170,PL=54,PR=10,PT=10,PB=26;
+  var pw=W-PL-PR,ph=H-PT-PB;
+  var ps=[10,25,50,75,90];
+  var pd={};
+  ps.forEach(function(p){pd[p]=[];});
+  for(var y=0;y<yv.length;y++) ps.forEach(function(p){pd[p].push(quantile(yv[y],p));});
+  var yMax=Math.max(pd[90][0]*1.05,1);
+  var fmtAx=function(v){return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?Math.round(v/1e3)+'K':Math.round(v).toString();};
+  function tx(y){return PL+(y/nY)*pw;}
+  function ty(v){return PT+ph-Math.max(0,Math.min(1,v/yMax))*ph;}
+  function bandPath(p1,p2){
+    var d='M';
+    for(var y=0;y<=nY;y++) d+=(y?'L':'')+tx(y).toFixed(1)+','+ty(pd[p1][y]).toFixed(1);
+    for(var y=nY;y>=0;y--) d+='L'+tx(y).toFixed(1)+','+ty(pd[p2][y]).toFixed(1);
+    return d+'Z';
+  }
+  function linePath(p){
+    var d='M';
+    for(var y=0;y<=nY;y++) d+=(y?'L':'')+tx(y).toFixed(1)+','+ty(pd[p][y]).toFixed(1);
+    return d;
+  }
+  var grid='';
+  for(var i=0;i<=4;i++){
+    var v=yMax*i/4,yy=ty(v);
+    grid+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(PL+pw)+'" y2="'+yy.toFixed(1)+'" stroke="#e2e8f0" stroke-width="0.8"/>';
+    grid+='<text x="'+(PL-4)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end" font-size="8.5" fill="#94a3b8">'+fmtAx(v)+'</text>';
+  }
+  var xLbls='';
+  var step=Math.max(1,Math.round(nY/6));
+  for(var y=0;y<=nY;y+=step){
+    xLbls+='<text x="'+tx(y).toFixed(1)+'" y="'+(H-PB+14)+'" text-anchor="middle" font-size="8.5" fill="#94a3b8">'+y+'</text>';
+  }
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'
+    +'<defs><clipPath id="mccp"><rect x="'+PL+'" y="'+PT+'" width="'+pw+'" height="'+ph+'"/></clipPath></defs>'
+    +grid+xLbls
+    +'<path d="'+bandPath(10,90)+'" fill="#ede9fe" clip-path="url(#mccp)"/>'
+    +'<path d="'+bandPath(25,75)+'" fill="#c4b5fd" clip-path="url(#mccp)"/>'
+    +'<path d="'+linePath(50)+'" fill="none" stroke="#7c3aed" stroke-width="2" clip-path="url(#mccp)"/>'
+    +'<line x1="'+PL+'" y1="'+ty(0).toFixed(1)+'" x2="'+(PL+pw)+'" y2="'+ty(0).toFixed(1)+'" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3" clip-path="url(#mccp)"/>'
+    +'<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(PT+ph)+'" stroke="#cbd5e1" stroke-width="1"/>'
+    +'<line x1="'+PL+'" y1="'+(PT+ph)+'" x2="'+(PL+pw)+'" y2="'+(PT+ph)+'" stroke="#cbd5e1" stroke-width="1"/>'
+    // legend
+    +'<rect x="'+(PL+4)+'" y="'+(PT+4)+'" width="9" height="9" fill="#ede9fe" stroke="#c4b5fd" stroke-width="0.8"/>'
+    +'<text x="'+(PL+15)+'" y="'+(PT+12)+'" font-size="8.5" fill="#64748b">P10–P90</text>'
+    +'<rect x="'+(PL+65)+'" y="'+(PT+4)+'" width="9" height="9" fill="#c4b5fd"/>'
+    +'<text x="'+(PL+76)+'" y="'+(PT+12)+'" font-size="8.5" fill="#64748b">P25–P75</text>'
+    +'<line x1="'+(PL+130)+'" y1="'+(PT+8.5)+'" x2="'+(PL+142)+'" y2="'+(PT+8.5)+'" stroke="#7c3aed" stroke-width="2"/>'
+    +'<text x="'+(PL+145)+'" y="'+(PT+12)+'" font-size="8.5" fill="#64748b">חציון</text>'
+    +'<line x1="'+(PL+176)+'" y1="'+(PT+8.5)+'" x2="'+(PL+188)+'" y2="'+(PT+8.5)+'" stroke="#dc2626" stroke-width="1" stroke-dasharray="4,3"/>'
+    +'<text x="'+(PL+191)+'" y="'+(PT+12)+'" font-size="8.5" fill="#64748b">כישלון</text>'
+    +'</svg>';
+  return svg;
+}
+function renderMC(mc,r,sigma,gapY,targetRem){
+  if(gapY<=0){
+    return '<div style="text-align:center;padding:18px;color:var(--txt2);font-size:13px">'
+      +'<div style="font-size:28px;margin-bottom:8px">✅</div>'
+      +'פרישה בגיל הפנסיה — אין תקופת גישור לסמלץ<br>'
+      +'<span style="font-size:11px">הסיכון העיקרי הוא תשואת הגמל, לא מהלך השוק בגישור</span></div>';
+  }
+  var prob=mc.prob;
+  var col=prob>=0.9?'var(--green)':prob>=0.7?'var(--amber)':'var(--red)';
+  var bg=prob>=0.9?'var(--glt)':prob>=0.7?'var(--alt)':'var(--rlt)';
+  var bd=prob>=0.9?'var(--gbd)':prob>=0.7?'var(--abd)':'var(--rbd)';
+  var lbl=prob>=0.9?'גבוהה — תוכנית הפרישה יציבה':prob>=0.7?'בינונית — שקול לחזק את הביטחון':prob>=0.5?'נמוכה — מומלץ לשנות את התוכנית':'גבוהה מאוד — תוכנית בסיכון ממשי';
+  var p10e=quantile(mc.yv[mc.nY],10),p50e=quantile(mc.yv[mc.nY],50),p90e=quantile(mc.yv[mc.nY],90);
+  var html='<div style="text-align:center;padding:14px 0 10px">'
+    +'<div style="font-size:52px;font-weight:900;color:'+col+';line-height:1">'+Math.round(prob*100)+'%</div>'
+    +'<div style="font-size:13px;font-weight:700;color:'+col+';margin-top:5px">הסתברות הצלחה</div>'
+    +'<div style="display:inline-block;margin-top:6px;padding:4px 14px;border-radius:20px;background:'+bg+';border:1px solid '+bd+';font-size:11px;font-weight:600;color:'+col+'">'+lbl+'</div>'
+    +'</div>';
+  html+=renderFanChart(mc.yv,mc.nY);
+  html+='<div style="font-size:10px;color:var(--txt3);text-align:center;margin:2px 0 10px">שנים מגיל הפרישה · יתרת הקרן הנזילה</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px">'
+    +statBox('P10 — תרחיש גרוע',fmtN(p10e),'var(--red)','var(--rlt)','var(--rbd)')
+    +statBox('P50 — חציון',fmtN(p50e),'var(--purple)','var(--plt)','var(--pbd)')
+    +statBox('P90 — תרחיש טוב',fmtN(p90e),'var(--green)','var(--glt)','var(--gbd)')
+    +'</div>';
+  html+='<div style="margin-top:10px;padding:8px 10px;background:#f8fafc;border-radius:8px;font-size:10px;color:var(--txt3);line-height:1.6">'
+    +'<strong style="color:var(--txt2)">פרמטרים:</strong> '
+    +'תשואה ריאלית ממוצעת '+(r*100).toFixed(1)+'% · תנודתיות σ='+(sigma*100).toFixed(0)+'% · '
+    +'גישור '+mc.nY+' שנים · 2,000 סימולציות (לוגנורמל חודשי)'
+    +'</div>';
+  return html;
+}
+function statBox(lbl,val,col,bg,bd){
+  return '<div style="text-align:center;padding:8px 6px;border-radius:8px;background:'+bg+';border:1px solid '+bd+'">'
+    +'<div style="font-size:9px;font-weight:600;color:var(--txt2);margin-bottom:4px">'+lbl+'</div>'
+    +'<div style="font-size:13px;font-weight:900;color:'+col+'">'+val+'</div>'
+    +'</div>';
+}
 
 function calc(){
   var age    = num('age');
@@ -976,13 +1115,18 @@ function calc(){
   }
   $('tc4').innerHTML=tc4;
 
+  // ── כרטיסיה 5: מונטה קרלו ──
+  var sigma=parseInt($('mcSigma').value)/100;
+  var mc=runMC(liqAvail,netDesired,Math.max(gapY,0),r,sigma,2000);
+  $('tc5').innerHTML=renderMC(mc,r,sigma,gapY,targetRem);
+
   saveState();
 }
 
 // ── PERSIST USER INPUTS via localStorage ──────────────────────────────────
 var STORAGE_KEY = 'ret_calc_v1';
 var PERSIST_NUM  = ['age','ywork','penAge','avgSal','desired','passiveInc','hishPct','iP','iH','iE','mortBal','mortRate','mortMo','targetRem','annuityFactor'];
-var PERSIST_RANGE = ['retRate'];
+var PERSIST_RANGE = ['retRate','mcSigma'];
 
 function saveState(){
   var s = {hishMode: hishMode};
@@ -1008,6 +1152,7 @@ function loadState(){
 document.addEventListener('DOMContentLoaded', function(){
   updateRange($('retRate'));
   updateRange($('ywork'));
+  updateRange($('mcSigma'));
   document.querySelectorAll('input[type=number]').forEach(function(el){
     el.addEventListener('focus', function(){ this.select(); });
   });
